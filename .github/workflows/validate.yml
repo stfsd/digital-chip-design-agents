@@ -25,10 +25,16 @@ jobs:
           python3 -c "
           import json, sys
           d = json.load(open('.claude-plugin/plugin.json'))
-          assert 'name'   in d, 'missing name'
-          assert 'skills' in d, 'missing skills path'
-          assert 'agents' in d, 'missing agents path'
-          print(f'plugin.json OK — name={d[\"name\"]}')
+          assert 'name'    in d, 'missing name'
+          assert 'skills'  in d, 'missing skills'
+          assert 'agents'  in d, 'missing agents'
+          assert isinstance(d['skills'], list), 'skills must be an array'
+          assert isinstance(d['agents'], list), 'agents must be an array'
+          for s in d['skills']:
+              assert 'name' in s and 'path' in s, f'skill entry missing name/path: {s}'
+          for a in d['agents']:
+              assert 'name' in a and 'path' in a, f'agent entry missing name/path: {a}'
+          print(f'plugin.json OK — name={d[\"name\"]}, skills={len(d[\"skills\"])}, agents={len(d[\"agents\"])}')
           "
 
       - name: Validate marketplace.json
