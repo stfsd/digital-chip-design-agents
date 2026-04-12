@@ -1,0 +1,19 @@
+{
+  "name": "digital-chip-design-agents",
+  "version": "1.0.0",
+  "description": "Full digital chip design pipeline — architecture evaluation through tape-out and firmware. 13 domains, 13 orchestrators, covering RTL, verification, synthesis, physical design, DFT, STA, HLS, SoC integration, compiler toolchain, embedded firmware, and FPGA emulation.",
+  "author": {
+    "name": "chuanseng-ng",
+    "url": "https://github.com/chuanseng-ng"
+  },
+  "homepage": "https://github.com/chuanseng-ng/digital-chip-design-agents",
+  "repository": "https://github.com/chuanseng-ng/digital-chip-design-agents",
+  "license": "MIT",
+  "keywords": [
+    "chip-design", "rtl", "systemverilog", "verification", "uvm",
+    "physical-design", "synthesis", "dft", "sta", "hls", "eda",
+    "fpga", "embedded", "compiler", "llvm", "soc"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
+}
