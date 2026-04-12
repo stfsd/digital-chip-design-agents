@@ -1,101 +1,117 @@
 {
   "name": "digital-chip-design-agents",
-  "description": "Full digital chip design pipeline — 13 domains from architecture through tape-out and firmware. Skills and orchestrators for RTL design, UVM verification, formal verification, logic synthesis, DFT, STA, HLS, physical design, SoC integration, compiler toolchain, embedded firmware, and FPGA emulation.",
   "owner": {
     "name": "chuanseng-ng",
     "github": "chuanseng-ng"
   },
+  "metadata": {
+    "description": "Full digital chip design pipeline — 13 domains from architecture through tape-out and firmware.",
+    "version": "1.0.0"
+  },
   "plugins": [
     {
       "name": "chip-design-architecture",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Microarchitecture exploration, PPA estimation, risk assessment, and sign-off",
-      "category": "engineering",
-      "keywords": ["architecture", "ppa", "chip-design", "microarchitecture"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/architecture"],
+      "agents": ["./agents/architecture-orchestrator.md"]
     },
     {
       "name": "chip-design-rtl",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "SystemVerilog RTL design — module planning, coding standards, lint, CDC, synthesis check",
-      "category": "engineering",
-      "keywords": ["rtl", "systemverilog", "lint", "cdc", "asic"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/rtl-design"],
+      "agents": ["./agents/rtl-design-orchestrator.md"]
     },
     {
       "name": "chip-design-verification",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "UVM testbench, test planning, constrained random, coverage closure, regression",
-      "category": "engineering",
-      "keywords": ["uvm", "verification", "coverage", "regression", "testbench"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/functional-verification"],
+      "agents": ["./agents/verification-orchestrator.md"]
     },
     {
       "name": "chip-design-formal",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Formal property verification (FPV) and logical equivalence checking (LEC)",
-      "category": "engineering",
-      "keywords": ["formal", "fpv", "lec", "properties", "equivalence"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/formal-verification"],
+      "agents": ["./agents/formal-orchestrator.md"]
     },
     {
       "name": "chip-design-synthesis",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Logic synthesis — SDC constraints, compile optimization, netlist QC and LEC",
-      "category": "engineering",
-      "keywords": ["synthesis", "sdc", "netlist", "timing", "lec"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/logic-synthesis"],
+      "agents": ["./agents/synthesis-orchestrator.md"]
     },
     {
       "name": "chip-design-dft",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Design for Test — scan insertion, ATPG, MBIST, JTAG boundary scan",
-      "category": "engineering",
-      "keywords": ["dft", "scan", "atpg", "bist", "jtag", "test"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/dft"],
+      "agents": ["./agents/dft-orchestrator.md"]
     },
     {
       "name": "chip-design-sta",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Static timing analysis — multi-corner analysis, exception review, ECO guidance",
-      "category": "engineering",
-      "keywords": ["sta", "timing", "eco", "multi-corner", "closure"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/sta"],
+      "agents": ["./agents/sta-orchestrator.md"]
     },
     {
       "name": "chip-design-hls",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "High-level synthesis — C/C++ to RTL, directive optimization, co-simulation",
-      "category": "engineering",
-      "keywords": ["hls", "c++", "rtl", "directives", "vivado", "catapult"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/hls"],
+      "agents": ["./agents/hls-orchestrator.md"]
     },
     {
       "name": "chip-design-pd",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Physical design — floorplan, placement, CTS, routing, timing/power/area opt, sign-off",
-      "category": "engineering",
-      "keywords": ["pd", "physical-design", "floorplan", "routing", "gds"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/physical-design"],
+      "agents": ["./agents/physical-design-orchestrator.md"]
     },
     {
       "name": "chip-design-soc",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "SoC IP integration — procurement, bus fabric, chip-level simulation",
-      "category": "engineering",
-      "keywords": ["soc", "ip", "integration", "axi", "bus-fabric"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/soc-integration"],
+      "agents": ["./agents/soc-integration-orchestrator.md"]
     },
     {
       "name": "chip-design-compiler",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Compiler toolchain — LLVM/GCC backend, assembler, linker, runtime libs for custom ISA",
-      "category": "engineering",
-      "keywords": ["compiler", "llvm", "gcc", "isa", "toolchain", "assembler"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/compiler-toolchain"],
+      "agents": ["./agents/compiler-orchestrator.md"]
     },
     {
       "name": "chip-design-firmware",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "Embedded firmware — BSP, peripheral drivers, RTOS integration, validation",
-      "category": "engineering",
-      "keywords": ["firmware", "bsp", "drivers", "rtos", "embedded"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/embedded-firmware"],
+      "agents": ["./agents/firmware-orchestrator.md"]
     },
     {
       "name": "chip-design-fpga",
-      "source": { "source": "github", "repo": "chuanseng-ng/digital-chip-design-agents" },
       "description": "FPGA emulation — ASIC-to-FPGA adaptation, partitioning, bring-up, SW validation",
-      "category": "engineering",
-      "keywords": ["fpga", "prototype", "emulation", "bringup", "xilinx"]
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/fpga-emulation"],
+      "agents": ["./agents/fpga-orchestrator.md"]
     }
   ]
 }
