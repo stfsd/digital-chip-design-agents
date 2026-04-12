@@ -47,10 +47,24 @@ jobs:
       - name: Validate marketplace.json
         run: |
           python3 -c "
-          import json
+          import json, os, sys
           d = json.load(open('.claude-plugin/marketplace.json'))
+          repo_root = os.path.realpath(os.getcwd())
+          errors = []
+          for p in d.get('plugins', []):
+              assert isinstance(p, dict), f'plugin entry not an object: {p!r}'
+              assert isinstance(p.get('name'), str) and p['name'].strip(), f'plugin missing name: {p!r}'
+              assert p.get('source') == './', f'plugin {p[\"name\"]!r} source must be \"./\", got {p.get(\"source\")!r}'
+              for raw in p.get('skills', []):
+                  resolved = os.path.realpath(os.path.join(repo_root, raw))
+                  assert resolved.startswith(repo_root + os.sep), f'skill path escapes repo: {raw!r}'
+                  assert os.path.exists(resolved), f'skill path not found in {p[\"name\"]!r}: {raw!r}'
+              for raw in p.get('agents', []):
+                  resolved = os.path.realpath(os.path.join(repo_root, raw))
+                  assert resolved.startswith(repo_root + os.sep), f'agent path escapes repo: {raw!r}'
+                  assert os.path.exists(resolved), f'agent path not found in {p[\"name\"]!r}: {raw!r}'
           n = len(d.get('plugins', []))
-          print(f'marketplace.json OK — {n} plugins registered')
+          print(f'marketplace.json OK — {n} plugins, all paths verified, no remote sources')
           "
 
       - name: Validate all SKILL.md files

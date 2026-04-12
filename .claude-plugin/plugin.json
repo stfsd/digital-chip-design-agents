@@ -15,19 +15,19 @@
     "fpga", "embedded", "compiler", "llvm", "soc"
   ],
   "skills": [
-    "./skills/architecture/SKILL.md",
-    "./skills/compiler-toolchain/SKILL.md",
-    "./skills/dft/SKILL.md",
-    "./skills/embedded-firmware/SKILL.md",
-    "./skills/formal-verification/SKILL.md",
-    "./skills/fpga-emulation/SKILL.md",
-    "./skills/functional-verification/SKILL.md",
-    "./skills/hls/SKILL.md",
-    "./skills/logic-synthesis/SKILL.md",
-    "./skills/physical-design/SKILL.md",
-    "./skills/rtl-design/SKILL.md",
-    "./skills/soc-integration/SKILL.md",
-    "./skills/sta/SKILL.md"
+    "./skills/architecture",
+    "./skills/compiler-toolchain",
+    "./skills/dft",
+    "./skills/embedded-firmware",
+    "./skills/formal-verification",
+    "./skills/fpga-emulation",
+    "./skills/functional-verification",
+    "./skills/hls",
+    "./skills/logic-synthesis",
+    "./skills/physical-design",
+    "./skills/rtl-design",
+    "./skills/soc-integration",
+    "./skills/sta"
   ],
   "agents": [
     "./agents/architecture-orchestrator.md",
