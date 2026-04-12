@@ -25,10 +25,25 @@ jobs:
           python3 -c "
           import json, sys
           d = json.load(open('.claude-plugin/plugin.json'))
-          assert 'name'   in d, 'missing name'
-          assert 'skills' in d, 'missing skills path'
-          assert 'agents' in d, 'missing agents path'
-          print(f'plugin.json OK — name={d[\"name\"]}')
+          assert 'name'    in d, 'missing name'
+          assert 'skills'  in d, 'missing skills'
+          assert 'agents'  in d, 'missing agents'
+          assert isinstance(d['skills'], list), 'skills must be an array'
+          assert isinstance(d['agents'], list), 'agents must be an array'
+          import os
+          repo_root = os.path.realpath(os.getcwd())
+          def check_entry(entry, kind):
+              assert isinstance(entry, dict), f'{kind} entry is not an object: {entry!r}'
+              assert isinstance(entry.get('name'), str) and entry['name'].strip(), f'{kind} entry has empty/missing name: {entry!r}'
+              assert isinstance(entry.get('path'), str) and entry['path'].strip(), f'{kind} entry has empty/missing path: {entry!r}'
+              resolved = os.path.realpath(os.path.join(repo_root, entry['path']))
+              assert resolved.startswith(repo_root + os.sep), f'{kind} path escapes repo root: {entry[\"path\"]!r} -> {resolved!r}'
+              assert os.path.exists(resolved), f'{kind} path not found: {entry[\"path\"]!r}'
+          for s in d['skills']:
+              check_entry(s, 'skill')
+          for a in d['agents']:
+              check_entry(a, 'agent')
+          print(f'plugin.json OK — name={d[\"name\"]}, skills={len(d[\"skills\"])}, agents={len(d[\"agents\"])}')
           "
 
       - name: Validate marketplace.json
