@@ -15,137 +15,33 @@
     "fpga", "embedded", "compiler", "llvm", "soc"
   ],
   "skills": [
-    {
-      "name": "architecture",
-      "description": "Microarchitecture exploration, PPA estimation, risk assessment, and architecture sign-off for digital chip design.",
-      "path": "./skills/architecture/SKILL.md"
-    },
-    {
-      "name": "compiler-toolchain",
-      "description": "Compiler toolchain development for custom processor ISAs — LLVM/GCC backend, assembler, linker, runtime libraries, and regression validation.",
-      "path": "./skills/compiler-toolchain/SKILL.md"
-    },
-    {
-      "name": "dft",
-      "description": "Design for Test — scan architecture planning, scan insertion, ATPG pattern generation, MBIST for embedded memories, and JTAG boundary scan.",
-      "path": "./skills/dft/SKILL.md"
-    },
-    {
-      "name": "embedded-firmware",
-      "description": "Embedded firmware and device drivers — BSP development, peripheral driver implementation, RTOS integration, and system validation.",
-      "path": "./skills/embedded-firmware/SKILL.md"
-    },
-    {
-      "name": "formal-verification",
-      "description": "Formal property verification (FPV) and logical equivalence checking (LEC) for digital chip design.",
-      "path": "./skills/formal-verification/SKILL.md"
-    },
-    {
-      "name": "fpga-emulation",
-      "description": "FPGA prototyping — ASIC-to-FPGA RTL adaptation, multi-FPGA partitioning, synthesis, hardware bring-up, and software validation.",
-      "path": "./skills/fpga-emulation/SKILL.md"
-    },
-    {
-      "name": "functional-verification",
-      "description": "UVM-based functional verification — testbench architecture, test planning, constrained-random stimulus, coverage closure, and regression sign-off.",
-      "path": "./skills/functional-verification/SKILL.md"
-    },
-    {
-      "name": "hls",
-      "description": "High-Level Synthesis — C/C++ algorithm analysis, HLS directive optimisation, synthesis execution, and co-simulation verification.",
-      "path": "./skills/hls/SKILL.md"
-    },
-    {
-      "name": "logic-synthesis",
-      "description": "Logic synthesis from RTL to gate-level netlist — SDC constraint validation, compile optimisation, netlist quality check, and LEC equivalence verification.",
-      "path": "./skills/logic-synthesis/SKILL.md"
-    },
-    {
-      "name": "physical-design",
-      "description": "Full physical design flow — floorplan, placement, clock tree synthesis, routing, timing optimisation, power optimisation, area optimisation, and tape-out sign-off.",
-      "path": "./skills/physical-design/SKILL.md"
-    },
-    {
-      "name": "rtl-design",
-      "description": "SystemVerilog RTL design — module planning, coding standards enforcement, lint checking, CDC/RDC analysis, and synthesis readiness verification.",
-      "path": "./skills/rtl-design/SKILL.md"
-    },
-    {
-      "name": "soc-integration",
-      "description": "SoC IP integration — IP procurement and qualification, IP configuration, bus fabric setup, top-level RTL integration, and chip-level simulation.",
-      "path": "./skills/soc-integration/SKILL.md"
-    },
-    {
-      "name": "sta",
-      "description": "Static timing analysis — multi-corner constraint validation, setup and hold analysis, timing exception review, and ECO guidance for closure.",
-      "path": "./skills/sta/SKILL.md"
-    }
+    "./skills/architecture/SKILL.md",
+    "./skills/compiler-toolchain/SKILL.md",
+    "./skills/dft/SKILL.md",
+    "./skills/embedded-firmware/SKILL.md",
+    "./skills/formal-verification/SKILL.md",
+    "./skills/fpga-emulation/SKILL.md",
+    "./skills/functional-verification/SKILL.md",
+    "./skills/hls/SKILL.md",
+    "./skills/logic-synthesis/SKILL.md",
+    "./skills/physical-design/SKILL.md",
+    "./skills/rtl-design/SKILL.md",
+    "./skills/soc-integration/SKILL.md",
+    "./skills/sta/SKILL.md"
   ],
   "agents": [
-    {
-      "name": "architecture-orchestrator",
-      "description": "Orchestrates the full architecture evaluation flow from product specification through microarchitecture sign-off.",
-      "path": "./agents/architecture-orchestrator.md"
-    },
-    {
-      "name": "compiler-orchestrator",
-      "description": "Orchestrates compiler toolchain development for custom processor ISAs — ISA analysis, LLVM/GCC backend, assembler, linker, runtime libraries, and regression validation.",
-      "path": "./agents/compiler-orchestrator.md"
-    },
-    {
-      "name": "dft-orchestrator",
-      "description": "Orchestrates the DFT flow from architecture through scan insertion, ATPG pattern generation, BIST, JTAG, and sign-off.",
-      "path": "./agents/dft-orchestrator.md"
-    },
-    {
-      "name": "firmware-orchestrator",
-      "description": "Orchestrates embedded firmware development — BSP, peripheral drivers, RTOS integration, validation, and system integration.",
-      "path": "./agents/firmware-orchestrator.md"
-    },
-    {
-      "name": "formal-orchestrator",
-      "description": "Orchestrates formal property verification (FPV) and logical equivalence checking (LEC).",
-      "path": "./agents/formal-orchestrator.md"
-    },
-    {
-      "name": "fpga-orchestrator",
-      "description": "Orchestrates FPGA prototyping — ASIC-to-FPGA RTL adaptation, partitioning, FPGA synthesis, hardware bring-up, and software validation.",
-      "path": "./agents/fpga-orchestrator.md"
-    },
-    {
-      "name": "hls-orchestrator",
-      "description": "Orchestrates High-Level Synthesis — C/C++ algorithm analysis, directive optimisation, synthesis, RTL QC, and co-simulation verification.",
-      "path": "./agents/hls-orchestrator.md"
-    },
-    {
-      "name": "physical-design-orchestrator",
-      "description": "Orchestrates the full physical design flow — floorplan, placement, CTS, routing, timing optimisation, power optimisation, area optimisation, and tape-out sign-off.",
-      "path": "./agents/physical-design-orchestrator.md"
-    },
-    {
-      "name": "rtl-design-orchestrator",
-      "description": "Orchestrates the RTL design flow from module planning through lint-clean, CDC-clean, synthesis-ready sign-off.",
-      "path": "./agents/rtl-design-orchestrator.md"
-    },
-    {
-      "name": "soc-integration-orchestrator",
-      "description": "Orchestrates SoC IP integration — IP procurement and qualification, IP configuration, bus fabric setup, top-level RTL integration, and chip-level simulation sign-off.",
-      "path": "./agents/soc-integration-orchestrator.md"
-    },
-    {
-      "name": "sta-orchestrator",
-      "description": "Orchestrates static timing analysis — multi-corner constraint validation, path analysis, timing exception review, ECO guidance, and timing sign-off.",
-      "path": "./agents/sta-orchestrator.md"
-    },
-    {
-      "name": "synthesis-orchestrator",
-      "description": "Orchestrates logic synthesis from RTL to verified gate-level netlist — SDC constraint validation, compile exploration, netlist quality check, and LEC equivalence verification.",
-      "path": "./agents/synthesis-orchestrator.md"
-    },
-    {
-      "name": "verification-orchestrator",
-      "description": "Orchestrates the UVM functional verification flow from testbench architecture through coverage-closed regression sign-off.",
-      "path": "./agents/verification-orchestrator.md"
-    }
+    "./agents/architecture-orchestrator.md",
+    "./agents/compiler-orchestrator.md",
+    "./agents/dft-orchestrator.md",
+    "./agents/firmware-orchestrator.md",
+    "./agents/formal-orchestrator.md",
+    "./agents/fpga-orchestrator.md",
+    "./agents/hls-orchestrator.md",
+    "./agents/physical-design-orchestrator.md",
+    "./agents/rtl-design-orchestrator.md",
+    "./agents/soc-integration-orchestrator.md",
+    "./agents/sta-orchestrator.md",
+    "./agents/synthesis-orchestrator.md",
+    "./agents/verification-orchestrator.md"
   ]
 }
