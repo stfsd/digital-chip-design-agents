@@ -31,16 +31,18 @@ jobs:
           assert isinstance(d['skills'], list), 'skills must be an array'
           assert isinstance(d['agents'], list), 'agents must be an array'
           import os
+          repo_root = os.path.realpath(os.getcwd())
+          def check_entry(entry, kind):
+              assert isinstance(entry, dict), f'{kind} entry is not an object: {entry!r}'
+              assert isinstance(entry.get('name'), str) and entry['name'].strip(), f'{kind} entry has empty/missing name: {entry!r}'
+              assert isinstance(entry.get('path'), str) and entry['path'].strip(), f'{kind} entry has empty/missing path: {entry!r}'
+              resolved = os.path.realpath(os.path.join(repo_root, entry['path']))
+              assert resolved.startswith(repo_root + os.sep), f'{kind} path escapes repo root: {entry[\"path\"]!r} -> {resolved!r}'
+              assert os.path.exists(resolved), f'{kind} path not found: {entry[\"path\"]!r}'
           for s in d['skills']:
-              assert isinstance(s, dict), f'skill entry is not an object: {s!r}'
-              assert isinstance(s.get('name'), str) and s['name'].strip(), f'skill entry has empty/missing name: {s!r}'
-              assert isinstance(s.get('path'), str) and s['path'].strip(), f'skill entry has empty/missing path: {s!r}'
-              assert os.path.exists(s['path']), f'skill path not found: {s[\"path\"]!r}'
+              check_entry(s, 'skill')
           for a in d['agents']:
-              assert isinstance(a, dict), f'agent entry is not an object: {a!r}'
-              assert isinstance(a.get('name'), str) and a['name'].strip(), f'agent entry has empty/missing name: {a!r}'
-              assert isinstance(a.get('path'), str) and a['path'].strip(), f'agent entry has empty/missing path: {a!r}'
-              assert os.path.exists(a['path']), f'agent path not found: {a[\"path\"]!r}'
+              check_entry(a, 'agent')
           print(f'plugin.json OK — name={d[\"name\"]}, skills={len(d[\"skills\"])}, agents={len(d[\"agents\"])}')
           "
 
