@@ -1,0 +1,109 @@
+name: Validate Plugin
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate Skills, Agents & Manifests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate plugin.json
+        run: |
+          python3 -c "
+          import json, sys
+          d = json.load(open('.claude-plugin/plugin.json'))
+          assert 'name'   in d, 'missing name'
+          assert 'skills' in d, 'missing skills path'
+          assert 'agents' in d, 'missing agents path'
+          print(f'plugin.json OK — name={d[\"name\"]}')
+          "
+
+      - name: Validate marketplace.json
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('.claude-plugin/marketplace.json'))
+          n = len(d.get('plugins', []))
+          print(f'marketplace.json OK — {n} plugins registered')
+          "
+
+      - name: Validate all SKILL.md files
+        run: |
+          python3 << 'PYEOF'
+          import os, sys
+          skills_dir = "skills"
+          required_sections = ["## Purpose", "## Domain Rules", "## QoR Metrics", "## Output Required"]
+          errors = []
+          domains = sorted(os.listdir(skills_dir))
+          for domain in domains:
+              path = os.path.join(skills_dir, domain, "SKILL.md")
+              if not os.path.exists(path):
+                  errors.append(f"MISSING: {path}")
+                  continue
+              content = open(path).read()
+              if not content.startswith("---"):
+                  errors.append(f"{path}: no YAML frontmatter")
+              for section in required_sections:
+                  if section not in content:
+                      errors.append(f"{path}: missing section '{section}'")
+              print(f"OK: {path} ({len(content.splitlines())} lines)")
+          if errors:
+              for e in errors: print(f"ERROR: {e}", file=sys.stderr)
+              sys.exit(1)
+          print(f"All {len(domains)} skill files validated")
+          PYEOF
+
+      - name: Validate all agent .md files
+        run: |
+          python3 << 'PYEOF'
+          import os, sys
+          agents_dir = "agents"
+          required_fields = ["name:", "description:", "model:", "effort:", "maxTurns:"]
+          errors = []
+          agents = sorted(f for f in os.listdir(agents_dir) if f.endswith(".md"))
+          for agent in agents:
+              path = os.path.join(agents_dir, agent)
+              content = open(path).read()
+              if not content.startswith("---"):
+                  errors.append(f"{path}: no YAML frontmatter")
+              for field in required_fields:
+                  if field not in content:
+                      errors.append(f"{path}: missing frontmatter field '{field}'")
+              if "## Stage Sequence" not in content:
+                  errors.append(f"{path}: missing '## Stage Sequence' section")
+              if "## Loop-Back Rules" not in content:
+                  errors.append(f"{path}: missing '## Loop-Back Rules' section")
+              print(f"OK: {path} ({len(content.splitlines())} lines)")
+          if errors:
+              for e in errors: print(f"ERROR: {e}", file=sys.stderr)
+              sys.exit(1)
+          print(f"All {len(agents)} agent files validated")
+          PYEOF
+
+      - name: Check skill count matches marketplace registrations
+        run: |
+          python3 << 'PYEOF'
+          import json, os
+          skill_count = len([d for d in os.listdir("skills")
+                             if os.path.isfile(f"skills/{d}/SKILL.md")])
+          agent_count = len([f for f in os.listdir("agents") if f.endswith(".md")])
+          mp = json.load(open(".claude-plugin/marketplace.json"))
+          mp_count = len(mp.get("plugins", []))
+          print(f"Skills: {skill_count} | Agents: {agent_count} | Marketplace entries: {mp_count}")
+          assert skill_count == agent_count == mp_count == 13, \
+              f"Count mismatch — expected 13 each: skills={skill_count}, agents={agent_count}, marketplace={mp_count}"
+          print("Count check PASSED")
+          PYEOF

@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    name: Tag and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run full validation
+        run: |
+          python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
+          python3 -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
+          echo "Manifests valid"
+
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Stamp version into plugin.json
+        run: |
+          python3 -c "
+          import json, os
+          tag = os.environ['VERSION'].lstrip('v')
+          d = json.load(open('.claude-plugin/plugin.json'))
+          d['version'] = tag
+          json.dump(d, open('.claude-plugin/plugin.json','w'), indent=2)
+          print(f'Stamped version {tag} into plugin.json')
+          "
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+
+      - name: Build release archive
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          tar -czf digital-chip-design-agents-${VERSION}.tar.gz \
+            --exclude='.git' \
+            --exclude='*.tar.gz' \
+            .
+          echo "Archive: digital-chip-design-agents-${VERSION}.tar.gz"
+          ls -lh digital-chip-design-agents-${VERSION}.tar.gz
+
+      - name: Generate release notes
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          SKILLS=$(find skills -name "SKILL.md" | wc -l | tr -d ' ')
+          AGENTS=$(find agents -name "*.md"     | wc -l | tr -d ' ')
+          cat << EOF > release_notes.md
+          ## digital-chip-design-agents ${VERSION}
+
+          A complete Claude Code marketplace plugin for digital chip design —
+          from architecture specification through tape-out and firmware.
+
+          ### Install
+          \`\`\`
+          /plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
+          \`\`\`
+          Then install any domain:
+          \`\`\`
+          /plugin install chip-design-pd@digital-chip-design-agents
+          /plugin install chip-design-rtl@digital-chip-design-agents
+          \`\`\`
+
+          ### Contents
+          - **${SKILLS}** skill files across 13 chip design domains
+          - **${AGENTS}** orchestrator agent definitions
+          - Full CI validation on every PR
+
+          ### Domains
+          Architecture · RTL Design · Functional Verification · Formal Verification ·
+          Logic Synthesis · DFT · STA · HLS · Physical Design · SoC Integration ·
+          Compiler Toolchain · Embedded Firmware · FPGA Emulation
+
+          See CHANGELOG.md for full details.
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: digital-chip-design-agents-${{ steps.version.outputs.VERSION }}.tar.gz
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.VERSION, 'rc') || contains(steps.version.outputs.VERSION, 'beta') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
