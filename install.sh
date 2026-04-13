@@ -52,17 +52,36 @@ PLUGINS=(
   "chip-design-fpga"
 )
 
+# ── Plugin → source directory mapping ────────────────────────────────────────
+declare -A PLUGIN_DIRS=(
+  ["chip-design-architecture"]="architecture"
+  ["chip-design-rtl"]="rtl-design"
+  ["chip-design-verification"]="verification"
+  ["chip-design-formal"]="formal"
+  ["chip-design-synthesis"]="synthesis"
+  ["chip-design-dft"]="dft"
+  ["chip-design-sta"]="sta"
+  ["chip-design-hls"]="hls"
+  ["chip-design-pd"]="pd"
+  ["chip-design-soc"]="soc"
+  ["chip-design-compiler"]="compiler"
+  ["chip-design-firmware"]="firmware"
+  ["chip-design-fpga"]="fpga"
+)
+
 # ── Populate plugin cache ─────────────────────────────────────────────────────
 echo "Installing plugin cache..."
 for plugin in "${PLUGINS[@]}"; do
+  subdir="${PLUGIN_DIRS[$plugin]}"
+  src="$REPO_DIR/plugins/$subdir"
   dest="$CACHE_DIR/$plugin/$VERSION"
   rm -rf "$dest"
   mkdir -p "$dest"
-  cp -r "$REPO_DIR/agents" "$dest/"
-  cp -r "$REPO_DIR/skills" "$dest/"
-  [[ -d "$REPO_DIR/docs" ]]      && cp -r "$REPO_DIR/docs"      "$dest/"
-  [[ -f "$REPO_DIR/README.md" ]] && cp    "$REPO_DIR/README.md" "$dest/"
-  [[ -f "$REPO_DIR/LICENSE" ]]   && cp    "$REPO_DIR/LICENSE"   "$dest/"
+  cp -r "$src/agents"         "$dest/"
+  cp -r "$src/skills"         "$dest/"
+  cp -r "$src/.claude-plugin" "$dest/"
+  [[ -f "$REPO_DIR/README.md" ]] && cp "$REPO_DIR/README.md" "$dest/"
+  [[ -f "$REPO_DIR/LICENSE" ]]   && cp "$REPO_DIR/LICENSE"   "$dest/"
   echo "  [OK] $plugin"
 done
 

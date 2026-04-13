@@ -44,23 +44,39 @@ $Plugins = @(
     "chip-design-fpga"
 )
 
+# ── Plugin → source directory mapping ────────────────────────────────────────
+$PluginDirs = @{
+    "chip-design-architecture" = "architecture"
+    "chip-design-rtl"          = "rtl-design"
+    "chip-design-verification" = "verification"
+    "chip-design-formal"       = "formal"
+    "chip-design-synthesis"    = "synthesis"
+    "chip-design-dft"          = "dft"
+    "chip-design-sta"          = "sta"
+    "chip-design-hls"          = "hls"
+    "chip-design-pd"           = "pd"
+    "chip-design-soc"          = "soc"
+    "chip-design-compiler"     = "compiler"
+    "chip-design-firmware"     = "firmware"
+    "chip-design-fpga"         = "fpga"
+}
+
 # ── Populate plugin cache ─────────────────────────────────────────────────────
 Write-Host "Installing plugin cache..."
 foreach ($Plugin in $Plugins) {
-    $Dest = Join-Path $CacheDir "$Plugin\$Version"
+    $Subdir = $PluginDirs[$Plugin]
+    $Src    = Join-Path $RepoDir "plugins\$Subdir"
+    $Dest   = Join-Path $CacheDir "$Plugin\$Version"
 
     if (Test-Path $Dest) { Remove-Item $Dest -Recurse -Force }
     New-Item -ItemType Directory -Path $Dest -Force | Out-Null
 
-    Copy-Item (Join-Path $RepoDir "agents") $Dest -Recurse -Force
-    Copy-Item (Join-Path $RepoDir "skills") $Dest -Recurse -Force
+    Copy-Item (Join-Path $Src "agents")         $Dest -Recurse -Force
+    Copy-Item (Join-Path $Src "skills")         $Dest -Recurse -Force
+    Copy-Item (Join-Path $Src ".claude-plugin") $Dest -Recurse -Force
 
-    $Docs = Join-Path $RepoDir "docs"
-    if (Test-Path $Docs) { Copy-Item $Docs $Dest -Recurse -Force }
-
-    $Readme = Join-Path $RepoDir "README.md"
-    if (Test-Path $Readme) { Copy-Item $Readme $Dest -Force }
-
+    $Readme  = Join-Path $RepoDir "README.md"
+    if (Test-Path $Readme)  { Copy-Item $Readme  $Dest -Force }
     $License = Join-Path $RepoDir "LICENSE"
     if (Test-Path $License) { Copy-Item $License $Dest -Force }
 
