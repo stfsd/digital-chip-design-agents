@@ -1,0 +1,39 @@
+name: AgentShield Security Scan
+
+on:
+  push:
+    branches: [master, main, develop]
+    paths:
+      - '.claude/**'
+      - 'plugins/**/*.md'
+      - '**/.claude-plugin/**'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - '.claude/**'
+      - 'plugins/**/*.md'
+      - '**/.claude-plugin/**'
+  workflow_dispatch:
+
+jobs:
+  agentshield:
+    name: Scan CLAUDE Files for Security Issues
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: AgentShield Security Scan
+        uses: affaan-m/agentshield@v1
+        with:
+          path: ./.claude
+          format: markdown
+
+      - name: Upload scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentshield-report
+          path: agentshield-report.*
+          if-no-files-found: ignore
