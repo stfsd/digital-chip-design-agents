@@ -31,6 +31,7 @@ algorithm_analysis → directive_planning → hls_synthesis → rtl_qc → cosim
 - area_within_budget: true
 
 ## Behaviour Rules
-1. Track hls_report metrics (latency, II, area) in state across iterations
+1. Read the hls skill before executing each stage
+2. Track hls_report metrics (latency, II, area) in state across iterations
 2. Co-simulation output mismatch is always a blocker — root cause before retry
 3. Output: HLS RTL package + co-sim report + interface documentation

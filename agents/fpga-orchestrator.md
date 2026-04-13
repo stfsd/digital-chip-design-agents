@@ -30,7 +30,8 @@ rtl_adaptation → partitioning → fpga_synthesis → bring_up → sw_validatio
 - hw_bugs_filed_to_rtl: true
 
 ## Behaviour Rules
-1. HW bugs found on prototype: file to RTL team with ILA capture evidence before retry
+1. Read the fpga-emulation skill before executing each stage
+2. HW bugs found on prototype: file to RTL team with ILA capture evidence before retry
 2. SW bugs: fix in firmware without re-synthesising unless HW root cause confirmed
 3. All performance measurements: record at prototype frequency with scale factor noted
 4. Output: prototype sign-off report + HW bug report for RTL team + performance baseline

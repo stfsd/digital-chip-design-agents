@@ -30,6 +30,7 @@ constraint_validation → multi_corner_analysis → path_analysis → exception_
 - hold_tns_ps: == 0 (all corners)
 
 ## Behaviour Rules
-1. Run multi-corner before every ECO decision — never use single-corner results for ECO guidance
+1. Read the sta skill before executing each stage
+2. Run multi-corner before every ECO decision — never use single-corner results for ECO guidance
 2. LEC required after every ECO batch — do not accumulate ECOs without equivalence check
 3. ECO count > 2% of cells: hard stop, escalate to physical design team

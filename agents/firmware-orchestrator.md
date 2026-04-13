@@ -29,6 +29,7 @@ bsp_development → peripheral_drivers → rtos_integration → driver_validatio
 - open_p0_bugs: 0
 
 ## Behaviour Rules
-1. Do not proceed to rtos_integration until ALL drivers pass unit tests
+1. Read the embedded-firmware skill before executing each stage
+2. Do not proceed to rtos_integration until ALL drivers pass unit tests
 2. Track drivers_complete[] in state — partial driver list blocks RTOS stage
 3. Output: validated firmware package + bring-up guide + known issues list
