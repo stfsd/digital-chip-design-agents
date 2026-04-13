@@ -30,6 +30,7 @@ ip_procurement → ip_configuration → bus_fabric_setup → top_integration →
 - unqualified_ips: 0
 
 ## Behaviour Rules
-1. Block progression if any IP has unresolved qualification issues
-2. Track ip_status{} per IP in state — never proceed with unqualified IP
-3. Output: integrated SoC RTL package ready for synthesis
+1. Read the soc-integration skill before executing each stage
+2. Block progression if any IP has unresolved qualification issues
+3. Track ip_status{} per IP in state — never proceed with unqualified IP
+4. Output: integrated SoC RTL package ready for synthesis

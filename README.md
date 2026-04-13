@@ -9,19 +9,43 @@
 
 ## Install
 
-**Step 1 — Register the marketplace** (once per machine):
-```
-/plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
+> **Note:** The Claude Code marketplace installer has a known race-condition bug on
+> Windows when multiple plugins share the same source repo. Use the install scripts
+> below — they bypass the installer and work reliably on all platforms.
+
+### Option A — Install script (recommended)
+
+**macOS / Linux / Git Bash:**
+```bash
+git clone https://github.com/chuanseng-ng/digital-chip-design-agents.git
+cd digital-chip-design-agents
+bash install.sh
 ```
 
-**Step 2 — Install a domain plugin**:
+**Windows (PowerShell):**
+```powershell
+git clone https://github.com/chuanseng-ng/digital-chip-design-agents.git
+cd digital-chip-design-agents
+.\install.ps1
 ```
-/plugin install chip-design-pd@digital-chip-design-agents
+
+Restart Claude Code after running — all 13 skills and agents will be active.
+
+### Option B — Marketplace (install plugins individually)
+
+If you prefer the built-in marketplace installer, add the marketplace once then
+install each plugin **one at a time** to avoid the race condition:
+
+```text
+/plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
+/plugin install chip-design-architecture@digital-chip-design-agents
 /plugin install chip-design-rtl@digital-chip-design-agents
 /plugin install chip-design-verification@digital-chip-design-agents
+... (repeat for each plugin)
 ```
 
-**Step 3 — Use it** — just describe your task in natural language:
+### Usage — describe your task in natural language
+
 ```
 Run the RTL design flow for my AXI DMA controller block
 Analyse timing violations on this routed DEF and suggest ECOs

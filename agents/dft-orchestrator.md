@@ -29,6 +29,7 @@ dft_architecture → scan_insertion → atpg → bist_insertion → jtag_setup �
 - jtag_connectivity: pass
 
 ## Behaviour Rules
-1. Track fault_coverage in state across all ATPG iterations
-2. Do not proceed to dft_signoff until SAF coverage meets target
-3. Output: DFT netlist, .scandef, ATPG patterns, BSDL file
+1. Read the dft skill before executing each stage
+2. Track fault_coverage in state across all ATPG iterations
+3. Do not proceed to dft_signoff until SAF coverage meets target
+4. Output: DFT netlist, .scandef, ATPG patterns, BSDL file

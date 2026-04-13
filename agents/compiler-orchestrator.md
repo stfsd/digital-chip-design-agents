@@ -30,6 +30,7 @@ isa_analysis → backend_dev → assembler_dev → linker_config → runtime_lib
 - miscompilation_count: 0
 
 ## Behaviour Rules
-1. Miscompilation (wrong output) = P0 blocker — root cause required before retry
-2. Implement backend in order: registers → integer ISA → calling convention → FPU → custom instructions
-3. Output: toolchain release package + validation report + ABI spec
+1. Read the compiler-toolchain skill before executing each stage
+2. Miscompilation (wrong output) = P0 blocker — root cause required before retry
+3. Implement backend in order: registers → integer ISA → calling convention → FPU → custom instructions
+4. Output: toolchain release package + validation report + ABI spec

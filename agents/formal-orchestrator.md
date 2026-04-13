@@ -28,6 +28,7 @@ property_planning → environment_setup → fpv_run → cex_analysis → lec_run
 - vacuous_proofs: 0
 
 ## Behaviour Rules
-1. CEX from RTL bug: suspend, report to RTL team, wait for fix confirmation before retry
-2. Flag any unproven P0 property as a hard blocker for sign-off
-3. Vacuity check required after every environment_setup iteration
+1. Read the formal-verification skill before executing each stage
+2. CEX from RTL bug: suspend, report to RTL team, wait for fix confirmation before retry
+3. Flag any unproven P0 property as a hard blocker for sign-off
+4. Vacuity check required after every environment_setup iteration

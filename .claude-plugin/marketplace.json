@@ -13,7 +13,7 @@
       "name": "chip-design-architecture",
       "description": "Microarchitecture exploration, PPA estimation, risk assessment, and sign-off",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/architecture"],
       "agents": ["./agents/architecture-orchestrator.md"]
     },
@@ -21,7 +21,7 @@
       "name": "chip-design-rtl",
       "description": "SystemVerilog RTL design — module planning, coding standards, lint, CDC, synthesis check",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/rtl-design"],
       "agents": ["./agents/rtl-design-orchestrator.md"]
     },
@@ -29,7 +29,7 @@
       "name": "chip-design-verification",
       "description": "UVM testbench, test planning, constrained random, coverage closure, regression",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/functional-verification"],
       "agents": ["./agents/verification-orchestrator.md"]
     },
@@ -37,7 +37,7 @@
       "name": "chip-design-formal",
       "description": "Formal property verification (FPV) and logical equivalence checking (LEC)",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/formal-verification"],
       "agents": ["./agents/formal-orchestrator.md"]
     },
@@ -45,7 +45,7 @@
       "name": "chip-design-synthesis",
       "description": "Logic synthesis — SDC constraints, compile optimization, netlist QC and LEC",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/logic-synthesis"],
       "agents": ["./agents/synthesis-orchestrator.md"]
     },
@@ -53,7 +53,7 @@
       "name": "chip-design-dft",
       "description": "Design for Test — scan insertion, ATPG, MBIST, JTAG boundary scan",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/dft"],
       "agents": ["./agents/dft-orchestrator.md"]
     },
@@ -61,7 +61,7 @@
       "name": "chip-design-sta",
       "description": "Static timing analysis — multi-corner analysis, exception review, ECO guidance",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/sta"],
       "agents": ["./agents/sta-orchestrator.md"]
     },
@@ -69,7 +69,7 @@
       "name": "chip-design-hls",
       "description": "High-level synthesis — C/C++ to RTL, directive optimization, co-simulation",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/hls"],
       "agents": ["./agents/hls-orchestrator.md"]
     },
@@ -77,7 +77,7 @@
       "name": "chip-design-pd",
       "description": "Physical design — floorplan, placement, CTS, routing, timing/power/area opt, sign-off",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/physical-design"],
       "agents": ["./agents/physical-design-orchestrator.md"]
     },
@@ -85,7 +85,7 @@
       "name": "chip-design-soc",
       "description": "SoC IP integration — procurement, bus fabric, chip-level simulation",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/soc-integration"],
       "agents": ["./agents/soc-integration-orchestrator.md"]
     },
@@ -93,7 +93,7 @@
       "name": "chip-design-compiler",
       "description": "Compiler toolchain — LLVM/GCC backend, assembler, linker, runtime libs for custom ISA",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/compiler-toolchain"],
       "agents": ["./agents/compiler-orchestrator.md"]
     },
@@ -101,7 +101,7 @@
       "name": "chip-design-firmware",
       "description": "Embedded firmware — BSP, peripheral drivers, RTOS integration, validation",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/embedded-firmware"],
       "agents": ["./agents/firmware-orchestrator.md"]
     },
@@ -109,7 +109,7 @@
       "name": "chip-design-fpga",
       "description": "FPGA emulation — ASIC-to-FPGA adaptation, partitioning, bring-up, SW validation",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": ["./skills/fpga-emulation"],
       "agents": ["./agents/fpga-orchestrator.md"]
     }

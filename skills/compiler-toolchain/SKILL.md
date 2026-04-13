@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: Compiler Toolchain Development
 
+## Invocation
+
+When this skill is loaded and a user presents a compiler or ISA task, **do not
+execute stages directly**. Immediately spawn the
+`digital-chip-design-agents:compiler-orchestrator` agent and pass the full user
+request and any available context to it. The orchestrator enforces the stage
+sequence, loop-back rules, and sign-off criteria defined below.
+
+Use the domain rules in this file only when the orchestrator reads this skill
+mid-flow for stage-specific guidance, or when the user asks a targeted reference
+question rather than requesting a full flow execution.
+
 ## Purpose
 Build and validate a complete compiler toolchain (LLVM or GCC based) for a
 custom processor ISA. Bridges hardware and software — without a working

@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: Logic Synthesis
 
+## Invocation
+
+- **If invoked by a user** presenting a synthesis task: immediately spawn the
+  `digital-chip-design-agents:synthesis-orchestrator` agent and pass the full
+  user request and any available context. Do not execute stages directly.
+- **If invoked by the `synthesis-orchestrator` mid-flow**: do not spawn a new
+  agent. Treat this file as read-only — return the requested stage rules,
+  sign-off criteria, or loop-back guidance to the calling orchestrator.
+
+Spawning the orchestrator from within an active orchestrator run causes recursive
+delegation and must never happen.
+
 ## Purpose
 Produce a timing-clean, area-efficient, LEC-verified gate-level netlist
 from RTL. Covers constraint setup, synthesis compilation strategy, and

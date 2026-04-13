@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: Formal Verification (FPV + LEC)
 
+## Invocation
+
+When this skill is loaded and a user presents a formal verification task, **do not
+execute stages directly**. Immediately spawn the
+`digital-chip-design-agents:formal-orchestrator` agent and pass the full user
+request and any available context to it. The orchestrator enforces the stage
+sequence, loop-back rules, and sign-off criteria defined below.
+
+Use the domain rules in this file only when the orchestrator reads this skill
+mid-flow for stage-specific guidance, or when the user asks a targeted reference
+question rather than requesting a full flow execution.
+
 ## Purpose
 Exhaustively prove design properties and equivalence using formal methods.
 Complements simulation-based verification for correctness proofs, protocol

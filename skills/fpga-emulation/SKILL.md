@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: FPGA Emulation & Prototyping
 
+## Invocation
+
+- **If invoked by a user** presenting an FPGA prototyping task: immediately spawn
+  the `digital-chip-design-agents:fpga-orchestrator` agent and pass the full user
+  request and any available context. Do not execute stages directly.
+- **If invoked by the `fpga-orchestrator` mid-flow**: do not spawn a new agent.
+  Treat this file as read-only — return the requested stage rules, sign-off
+  criteria, or loop-back guidance to the calling orchestrator.
+
+Spawning the orchestrator from within an active orchestrator run causes recursive
+delegation and must never happen.
+
 ## Purpose
 Port an ASIC design to an FPGA prototype platform for pre-silicon hardware/
 software co-development. The FPGA prototype is not cycle-accurate but

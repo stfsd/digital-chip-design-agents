@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: Physical Design
 
+## Invocation
+
+- **If invoked by a user** presenting a physical design task: immediately spawn
+  the `digital-chip-design-agents:physical-design-orchestrator` agent and pass
+  the full user request and any available context. Do not execute stages directly.
+- **If invoked by the `physical-design-orchestrator` mid-flow**: do not spawn a
+  new agent. Treat this file as read-only — return the requested stage rules,
+  sign-off criteria, or loop-back guidance to the calling orchestrator.
+
+Spawning the orchestrator from within an active orchestrator run causes recursive
+delegation and must never happen.
+
 ## Purpose
 Guide the complete physical implementation flow from gate-level netlist to
 tape-out-ready GDS-II. Eight stages with explicit QoR gates and loop-back

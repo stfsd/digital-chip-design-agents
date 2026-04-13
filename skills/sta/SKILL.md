@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: Static Timing Analysis (STA)
 
+## Invocation
+
+When this skill is loaded and a user presents a timing analysis task, **do not
+execute stages directly**. Immediately spawn the
+`digital-chip-design-agents:sta-orchestrator` agent and pass the full user
+request and any available context to it. The orchestrator enforces the stage
+sequence, loop-back rules, and sign-off criteria defined below.
+
+Use the domain rules in this file only when the orchestrator reads this skill
+mid-flow for stage-specific guidance, or when the user asks a targeted reference
+question rather than requesting a full flow execution.
+
 ## Purpose
 Multi-corner, multi-mode timing analysis, exception review, ECO-guided closure,
 and timing sign-off. WNS ≥ 0 and TNS = 0 at all corners required for tape-out.
@@ -98,6 +110,39 @@ and timing sign-off. WNS ≥ 0 and TNS = 0 at all corners required for tape-out.
 ### Output Required
 - Failing path analysis (root cause per path group)
 - Paths requiring ECO vs paths requiring SDC correction
+
+---
+
+## Stage: exception_review
+
+### Domain Rules
+1. Review every timing exception for correctness and scope:
+   - `set_false_path`: verify the path is truly non-functional (not just inconvenient)
+   - `set_multicycle_path`: verify both `-setup N` and `-hold 1` are set correctly
+   - `set_max_delay`: verify value matches system-level timing budget
+2. Overly broad exceptions: any exception matching > 1% of all paths requires architect approval
+3. Exceptions masking real violations: revoke immediately and re-run path analysis
+4. Every exception must have a documented justification (design intent, async crossing, test mode)
+5. Post-ECO exceptions: verify any new exceptions added after ECO are still valid
+
+### Common Exception Errors
+
+| Error | Consequence |
+|-------|------------|
+| `set_false_path` on functional CDC | Real metastability risk hidden |
+| MCP without hold correction | Hold violations introduced silently |
+| Exception too broad (glob match) | Unintended paths unconstrained |
+| Expired exception (removed logic) | Stale SDC — may mask other issues |
+
+### QoR Metrics to Evaluate
+- 0 exceptions without documented justification
+- 0 overly broad exceptions (flagged for architect review)
+- Exception list reviewed and signed off before ECO guidance begins
+
+### Output Required
+- Exception audit report (valid / revoked / needs-approval per exception)
+- Revised SDC with invalid exceptions removed
+- Exception sign-off record
 
 ---
 
