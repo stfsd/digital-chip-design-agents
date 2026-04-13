@@ -5,6 +5,7 @@ on:
     branches: [master, main, develop]
   pull_request:
     branches: [master, main]
+  workflow_call:
 
 jobs:
   validate:
@@ -57,7 +58,9 @@ jobs:
               assert isinstance(p.get('name'), str) and p['name'].strip()
               src = p.get('source', '')
               source_dir = os.path.realpath(os.path.join(repo_root, src))
+              assert source_dir.startswith(repo_root + os.sep), f'plugin {p[\"name\"]!r} source escapes repo: {src!r}'
               assert os.path.isdir(source_dir), f'plugin {p[\"name\"]!r} source not found: {src!r}'
+              assert os.path.isfile(os.path.join(source_dir, '.claude-plugin', 'plugin.json')), f'plugin {p[\"name\"]!r}: no .claude-plugin/plugin.json at source: {src!r}'
               for raw in p.get('skills', []):
                   resolved = os.path.realpath(os.path.join(source_dir, raw))
                   assert resolved.startswith(repo_root + os.sep), f'skill path escapes repo: {raw!r}'
