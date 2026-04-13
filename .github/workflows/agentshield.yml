@@ -19,21 +19,36 @@ jobs:
   agentshield:
     name: Scan CLAUDE Files for Security Issues
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: AgentShield Security Scan
-        uses: affaan-m/agentshield@v1
+        id: agentshield
+        uses: affaan-m/agentshield@0b5e1bc95a712285d6bf6289f67d6694de4cf8ef  # v1.3.0
         with:
           path: ./.claude
           format: markdown
+
+      - name: Write scan report
+        if: always()
+        run: |
+          cat <<EOF > agentshield-report.md
+          # AgentShield Security Scan Report
+
+          | Metric           | Value |
+          |------------------|-------|
+          | Score            | ${{ steps.agentshield.outputs.score }} |
+          | Grade            | ${{ steps.agentshield.outputs.grade }} |
+          | Total Findings   | ${{ steps.agentshield.outputs.total-findings }} |
+          | Critical Findings| ${{ steps.agentshield.outputs.critical-count }} |
+          EOF
 
       - name: Upload scan report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: agentshield-report
-          path: agentshield-report.*
-          if-no-files-found: ignore
+          path: agentshield-report.md
