@@ -1,4 +1,4 @@
-# install.ps1 - sets up all 13 digital-chip-design-agents plugins for Claude Code
+﻿# install.ps1 - sets up all 13 digital-chip-design-agents plugins for Claude Code
 # Run from the repo root in PowerShell:  .\install.ps1
 #Requires -Version 5.1
 Set-StrictMode -Version Latest

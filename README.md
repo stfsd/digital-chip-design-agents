@@ -189,6 +189,23 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome for:
 
 CI validates all files on every PR — the validate workflow must pass before merge.
 
+### Shared metadata in plugin.json
+
+Each `plugins/<domain>/.claude-plugin/plugin.json` repeats the same `author`,
+`homepage`, `repository`, and `license` fields. These are intentional — the
+plugin installer reads each manifest in isolation and requires these fields to
+be present. The canonical values are:
+
+```json
+"author":     { "name": "chuanseng-ng", "url": "https://github.com/chuanseng-ng" },
+"homepage":   "https://github.com/chuanseng-ng/digital-chip-design-agents",
+"repository": "https://github.com/chuanseng-ng/digital-chip-design-agents",
+"license":    "MIT"
+```
+
+When updating these fields, change all 13 `plugin.json` files and
+`.claude-plugin/marketplace.json` together.
+
 ---
 
 ## License
