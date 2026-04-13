@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: FPGA Emulation & Prototyping
 
+## Invocation
+
+When this skill is loaded and a user presents an FPGA prototyping task, **do not
+execute stages directly**. Immediately spawn the
+`digital-chip-design-agents:fpga-orchestrator` agent and pass the full user
+request and any available context to it. The orchestrator enforces the stage
+sequence, loop-back rules, and sign-off criteria defined below.
+
+Use the domain rules in this file only when the orchestrator reads this skill
+mid-flow for stage-specific guidance, or when the user asks a targeted reference
+question rather than requesting a full flow execution.
+
 ## Purpose
 Port an ASIC design to an FPGA prototype platform for pre-silicon hardware/
 software co-development. The FPGA prototype is not cycle-accurate but

@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: Functional Verification (UVM)
 
+## Invocation
+
+When this skill is loaded and a user presents a verification task, **do not
+execute stages directly**. Immediately spawn the
+`digital-chip-design-agents:verification-orchestrator` agent and pass the full
+user request and any available context to it. The orchestrator enforces the stage
+sequence, loop-back rules, and sign-off criteria defined below.
+
+Use the domain rules in this file only when the orchestrator reads this skill
+mid-flow for stage-specific guidance, or when the user asks a targeted reference
+question rather than requesting a full flow execution.
+
 ## Purpose
 Guide the complete UVM functional verification flow from testbench architecture
 through coverage-closed regression sign-off. Produces a verified RTL package
@@ -121,6 +133,53 @@ priority:     P0
 - UVM component source files
 - SVA assertion files (bind-based)
 - Compile script
+
+---
+
+## Stage: directed_tests
+
+### Domain Rules
+1. Implement one directed test per V-plan entry — tests must be deterministic
+2. Each test: verify the exact functional requirement it targets (no catch-all tests)
+3. Error/exception paths: explicit stimulus to trigger each one
+4. Corner cases: boundary values, max/min, overflow, underflow — one test each
+5. Reset during active transaction: at least one test per interface
+6. P0 tests must all pass before constrained-random phase begins
+7. DUT bug found during directed test: **suspend flow immediately** — do not continue
+   to constrained-random; flag RTL fix required and wait for confirmation
+
+### QoR Metrics to Evaluate
+- All V-plan features covered by at least one directed test
+- P0 directed tests: 100% pass before proceeding
+- 0 UVM FATAL or ERROR during directed test phase
+
+### Output Required
+- Directed test source files (one UVM sequence per feature)
+- Directed test pass/fail report
+- Bug report (if any DUT bugs found)
+
+---
+
+## Stage: constrained_random
+
+### Domain Rules
+1. Constraint blocks: randomise all stimulus fields within protocol-legal ranges
+2. Bias constraints: weight toward uncovered coverage bins identified in prior runs
+3. Seeds: use at least 10 distinct seeds before evaluating coverage
+4. Scoreboards active throughout: every transaction checked against reference model
+5. Any UVM FATAL: stop immediately — do not accumulate errors across seeds
+6. Any scoreboard mismatch: classify as DUT bug or testbench bug before continuing
+7. Run until coverage targets are met or max seed budget exhausted
+
+### QoR Metrics to Evaluate
+- Functional coverage: trending toward 100% across seeds
+- No persistent scoreboard mismatches (classify and fix before more seeds)
+- Regression pass rate: 100% (no failing seeds)
+
+### Output Required
+- Coverage report (merged across all seeds run so far)
+- Uncovered bin list for directed test closure
+- Seed log (seed number, pass/fail, coverage achieved)
 
 ---
 

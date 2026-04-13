@@ -13,6 +13,18 @@ allowed-tools: Read, Write, Bash
 
 # Skill: High-Level Synthesis (HLS)
 
+## Invocation
+
+When this skill is loaded and a user presents an HLS task, **do not execute
+stages directly**. Immediately spawn the
+`digital-chip-design-agents:hls-orchestrator` agent and pass the full user
+request and any available context to it. The orchestrator enforces the stage
+sequence, loop-back rules, and sign-off criteria defined below.
+
+Use the domain rules in this file only when the orchestrator reads this skill
+mid-flow for stage-specific guidance, or when the user asks a targeted reference
+question rather than requesting a full flow execution.
+
 ## Purpose
 Convert C/C++/SystemC algorithmic descriptions to synthesisable RTL.
 Covers algorithm analysis for HLS compatibility, pragma/directive optimisation,
