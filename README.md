@@ -9,11 +9,29 @@
 
 ## Install
 
-> **Note:** The Claude Code marketplace installer has a known race-condition bug on
-> Windows when multiple plugins share the same source repo. Use the install scripts
-> below — they bypass the installer and work reliably on all platforms.
+### Option A — Marketplace (recommended)
 
-### Option A — Install script (recommended)
+Each plugin lives in its own isolated directory, so parallel installs have no
+file-lock conflicts on any platform:
+
+```text
+/plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
+/plugin install chip-design-architecture@digital-chip-design-agents
+/plugin install chip-design-rtl@digital-chip-design-agents
+/plugin install chip-design-verification@digital-chip-design-agents
+/plugin install chip-design-formal@digital-chip-design-agents
+/plugin install chip-design-synthesis@digital-chip-design-agents
+/plugin install chip-design-dft@digital-chip-design-agents
+/plugin install chip-design-sta@digital-chip-design-agents
+/plugin install chip-design-hls@digital-chip-design-agents
+/plugin install chip-design-pd@digital-chip-design-agents
+/plugin install chip-design-soc@digital-chip-design-agents
+/plugin install chip-design-compiler@digital-chip-design-agents
+/plugin install chip-design-firmware@digital-chip-design-agents
+/plugin install chip-design-fpga@digital-chip-design-agents
+```
+
+### Option B — Install script (local clone)
 
 **macOS / Linux / Git Bash:**
 ```bash
@@ -30,19 +48,6 @@ cd digital-chip-design-agents
 ```
 
 Restart Claude Code after running — all 13 skills and agents will be active.
-
-### Option B — Marketplace (install plugins individually)
-
-If you prefer the built-in marketplace installer, add the marketplace once then
-install each plugin **one at a time** to avoid the race condition:
-
-```text
-/plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
-/plugin install chip-design-architecture@digital-chip-design-agents
-/plugin install chip-design-rtl@digital-chip-design-agents
-/plugin install chip-design-verification@digital-chip-design-agents
-... (repeat for each plugin)
-```
 
 ### Usage — describe your task in natural language
 
@@ -81,12 +86,13 @@ Claude automatically loads the correct skill before executing.
 
 Each plugin installs two things:
 
-1. **A Skill** (`skills/<domain>/SKILL.md`) — domain knowledge Claude reads before executing.
-   Contains stage-by-stage rules, QoR metrics, common fixes, and output requirements.
+1. **A Skill** (`plugins/<domain>/skills/<domain>/SKILL.md`) — domain knowledge Claude reads
+   before executing. Contains stage-by-stage rules, QoR metrics, common fixes, and output
+   requirements.
 
-2. **An Orchestrator Agent** (`agents/<domain>-orchestrator.md`) — a subagent that manages
-   the full multi-stage flow. It sequences stages, enforces pass/fail criteria, applies
-   loop-back rules when a stage fails, and escalates clearly when human input is needed.
+2. **An Orchestrator Agent** (`plugins/<domain>/agents/<domain>-orchestrator.md`) — a subagent
+   that manages the full multi-stage flow. It sequences stages, enforces pass/fail criteria,
+   applies loop-back rules when a stage fails, and escalates clearly when human input is needed.
 
 Skills are loaded autonomously by Claude when you describe a task. Orchestrators are
 invoked explicitly when you want to run a complete flow end-to-end.
@@ -116,25 +122,27 @@ All 13 orchestrators follow the same pattern with domain-specific stages and cri
 digital-chip-design-agents/
 │
 ├── .claude-plugin/
-│   ├── plugin.json          ← Claude Code plugin manifest (required)
-│   └── marketplace.json     ← Marketplace registry (all 13 plugins)
+│   └── marketplace.json         ← Marketplace registry (all 13 plugins)
 │
-├── skills/                  ← One subdirectory per domain
+├── plugins/                     ← One isolated directory per plugin
 │   ├── architecture/
-│   │   └── SKILL.md         ← YAML frontmatter + staged domain knowledge
+│   │   ├── .claude-plugin/
+│   │   │   └── plugin.json      ← Per-plugin manifest
+│   │   ├── agents/
+│   │   │   └── architecture-orchestrator.md
+│   │   └── skills/
+│   │       └── architecture/
+│   │           └── SKILL.md
 │   ├── rtl-design/
-│   │   └── SKILL.md
-│   └── ... (13 total)
-│
-├── agents/                  ← One .md file per orchestrator
-│   ├── architecture-orchestrator.md
-│   ├── rtl-design-orchestrator.md
-│   └── ... (13 total)
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── agents/rtl-design-orchestrator.md
+│   │   └── skills/rtl-design/SKILL.md
+│   └── ... (13 total, same layout each)
 │
 └── .github/
     └── workflows/
-        ├── validate.yml     ← CI: validates all files on every PR
-        └── release.yml      ← CD: tags and publishes releases
+        ├── validate.yml         ← CI: validates all files on every PR
+        └── release.yml          ← CD: tags and publishes releases
 ```
 
 ---
@@ -180,6 +188,23 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome for:
 - New skill domains (e.g., package/assembly, analog integration)
 
 CI validates all files on every PR — the validate workflow must pass before merge.
+
+### Shared metadata in plugin.json
+
+Each `plugins/<domain>/.claude-plugin/plugin.json` repeats the same `author`,
+`homepage`, `repository`, and `license` fields. These are intentional — the
+plugin installer reads each manifest in isolation and requires these fields to
+be present. The canonical values are:
+
+```json
+"author":     { "name": "chuanseng-ng", "url": "https://github.com/chuanseng-ng" },
+"homepage":   "https://github.com/chuanseng-ng/digital-chip-design-agents",
+"repository": "https://github.com/chuanseng-ng/digital-chip-design-agents",
+"license":    "MIT"
+```
+
+When updating these fields, change all 13 `plugin.json` files and
+`.claude-plugin/marketplace.json` together.
 
 ---
 
