@@ -36,7 +36,7 @@ Restart Claude Code after running — all 13 skills and agents will be active.
 If you prefer the built-in marketplace installer, add the marketplace once then
 install each plugin **one at a time** to avoid the race condition:
 
-```
+```text
 /plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
 /plugin install chip-design-architecture@digital-chip-design-agents
 /plugin install chip-design-rtl@digital-chip-design-agents

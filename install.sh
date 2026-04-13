@@ -10,7 +10,7 @@ VERSION="1.0.0"
 # ── Locate Claude config dir ──────────────────────────────────────────────────
 if [[ -n "${CLAUDE_CONFIG_DIR:-}" ]]; then
   CLAUDE_DIR="$CLAUDE_CONFIG_DIR"
-elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+elif [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* || "$OSTYPE" == win32* ]]; then
   CLAUDE_DIR="${USERPROFILE}/.claude"
 else
   CLAUDE_DIR="${HOME}/.claude"
@@ -76,6 +76,13 @@ for plugin in "${PLUGINS[@]}"; do
   ENABLED_JSON+="    \"${plugin}@${MARKETPLACE}\": true,"$'\n'
 done
 ENABLED_JSON="${ENABLED_JSON%,$'\n'}"  # strip trailing comma
+
+# Preflight: python3 required for JSON merge
+if ! command -v python3 &>/dev/null; then
+  echo "ERROR: python3 is required but not found in PATH."
+  echo "  Install Python 3 and re-run this script."
+  exit 1
+fi
 
 # Use Python for safe JSON merge (handles missing/existing settings)
 python3 - "$SETTINGS" "$MARKETPLACE" "$REPO_DIR" <<PYEOF
