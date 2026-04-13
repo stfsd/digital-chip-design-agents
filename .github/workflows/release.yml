@@ -21,9 +21,13 @@ jobs:
 
       - name: Run full validation
         run: |
-          python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
-          python3 -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
-          echo "Manifests valid"
+          python3 -c "
+          import json, glob
+          for p in sorted(glob.glob('plugins/*/.claude-plugin/plugin.json')):
+              json.load(open(p))
+          json.load(open('.claude-plugin/marketplace.json'))
+          print('Manifests valid')
+          "
 
       - name: Extract version
         id: version
@@ -32,12 +36,14 @@ jobs:
       - name: Stamp version into plugin.json
         run: |
           python3 -c "
-          import json, os
+          import json, os, glob
           tag = os.environ['VERSION'].lstrip('v')
-          d = json.load(open('.claude-plugin/plugin.json'))
-          d['version'] = tag
-          json.dump(d, open('.claude-plugin/plugin.json','w'), indent=2)
-          print(f'Stamped version {tag} into plugin.json')
+          paths = sorted(glob.glob('plugins/*/.claude-plugin/plugin.json'))
+          for path in paths:
+              d = json.load(open(path))
+              d['version'] = tag
+              json.dump(d, open(path, 'w'), indent=2)
+          print(f'Stamped version {tag} into {len(paths)} plugin.json files')
           "
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
@@ -55,8 +61,8 @@ jobs:
       - name: Generate release notes
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
-          SKILLS=$(find skills -name "SKILL.md" | wc -l | tr -d ' ')
-          AGENTS=$(find agents -name "*.md"     | wc -l | tr -d ' ')
+          SKILLS=$(find plugins -name "SKILL.md" | wc -l | tr -d ' ')
+          AGENTS=$(find plugins -path "*/agents/*.md" | wc -l | tr -d ' ')
           cat << EOF > release_notes.md
           ## digital-chip-design-agents ${VERSION}
 
