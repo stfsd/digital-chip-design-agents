@@ -15,15 +15,15 @@ allowed-tools: Read, Write, Bash
 
 ## Invocation
 
-When this skill is loaded and a user presents an FPGA prototyping task, **do not
-execute stages directly**. Immediately spawn the
-`digital-chip-design-agents:fpga-orchestrator` agent and pass the full user
-request and any available context to it. The orchestrator enforces the stage
-sequence, loop-back rules, and sign-off criteria defined below.
+- **If invoked by a user** presenting an FPGA prototyping task: immediately spawn
+  the `digital-chip-design-agents:fpga-orchestrator` agent and pass the full user
+  request and any available context. Do not execute stages directly.
+- **If invoked by the `fpga-orchestrator` mid-flow**: do not spawn a new agent.
+  Treat this file as read-only — return the requested stage rules, sign-off
+  criteria, or loop-back guidance to the calling orchestrator.
 
-Use the domain rules in this file only when the orchestrator reads this skill
-mid-flow for stage-specific guidance, or when the user asks a targeted reference
-question rather than requesting a full flow execution.
+Spawning the orchestrator from within an active orchestrator run causes recursive
+delegation and must never happen.
 
 ## Purpose
 Port an ASIC design to an FPGA prototype platform for pre-silicon hardware/

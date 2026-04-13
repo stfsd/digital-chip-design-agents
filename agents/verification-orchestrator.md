@@ -32,5 +32,5 @@ tb_architecture → test_planning → uvm_tb_build → directed_tests → constr
 ## Behaviour Rules
 1. Read the functional-verification skill before executing each stage
 2. Track all bugs in state bugs_found[] — do not discard between stages
-2. Do not proceed to regression_signoff if any P0/P1 bugs remain open
-3. Bug found during directed tests: suspend flow; present RTL fix required report
+3. Do not proceed to regression_signoff if any P0/P1 bugs remain open
+4. Bug found during directed tests: suspend flow; present RTL fix required report

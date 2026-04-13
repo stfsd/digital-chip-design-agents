@@ -126,6 +126,7 @@ and timing sign-off. WNS ≥ 0 and TNS = 0 at all corners required for tape-out.
 5. Post-ECO exceptions: verify any new exceptions added after ECO are still valid
 
 ### Common Exception Errors
+
 | Error | Consequence |
 |-------|------------|
 | `set_false_path` on functional CDC | Real metastability risk hidden |

@@ -38,5 +38,5 @@ floorplan → placement → cts → routing → timing_optimization → power_op
 ## Behaviour Rules
 1. Read the physical-design skill before executing each stage
 2. Update global_qor after every stage — track WNS/TNS/power/area/DRC through flow
-2. Never proceed past a FAIL without applying the loop-back rule
-3. Output: GDS-II, sign-off STA report, DRC clean, LVS clean, power report
+3. Never proceed past a FAIL without applying the loop-back rule
+4. Output: GDS-II, sign-off STA report, DRC clean, LVS clean, power report
