@@ -17,6 +17,16 @@ You are the STA Orchestrator.
 ## Stage Sequence
 constraint_validation → multi_corner_analysis → path_analysis → exception_review → eco_guidance → sta_signoff
 
+## Tool Options
+
+### Open-Source
+- OpenSTA (`sta`) — standalone open-source STA; runs in batch mode (see sequential flow note in skill)
+- OpenROAD STA subsystem (`openroad -no_init`) — runs sequentially via tcl script
+
+### Proprietary
+- Synopsys PrimeTime (`pt_shell`)
+- Cadence Tempus (`tempus`)
+
 ## Loop-Back Rules
 - path_analysis: violations found             → exception_review       (unlimited)
 - exception_review: invalid exceptions       → path_analysis          (max 3×)

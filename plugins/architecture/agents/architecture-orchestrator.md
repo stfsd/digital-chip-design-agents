@@ -20,6 +20,19 @@ that produces a validated microarchitecture document ready for RTL handoff.
 ## Stage Sequence
 spec_analysis → arch_exploration → perf_modelling → power_area_estimation → risk_assessment → arch_signoff
 
+## Tool Options
+
+### Open-Source
+- Python estimation scripts (`python3 estimate.py`)
+- gem5 full-system simulator (`gem5`)
+- McPAT power-area estimator (`mcpat`)
+- CACTI memory estimator (`cacti`)
+
+### Proprietary
+- Synopsys Platform Architect
+- ARM Performance Models
+- Cadence Virtual System Platform (VSP)
+
 ## Loop-Back Rules
 - perf_modelling FAIL (throughput misses target)         → arch_exploration   (max 3×)
 - power_area_estimation FAIL (area or power > 80% budget) → arch_exploration   (max 2×)

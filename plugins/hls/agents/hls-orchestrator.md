@@ -17,6 +17,19 @@ You are the HLS Orchestrator.
 ## Stage Sequence
 algorithm_analysis → directive_planning → hls_synthesis → rtl_qc → cosimulation → hls_signoff
 
+## Tool Options
+
+### Open-Source
+- Bambu HLS (`bambu`)
+- LegUp HLS
+- Calyx / Futil
+- MLIR/CIRCT (`circt-opt`)
+
+### Proprietary
+- Xilinx Vitis HLS (`vitis_hls`)
+- Cadence Stratus (`stratus`)
+- Siemens Catapult (`catapult`)
+
 ## Loop-Back Rules
 - hls_synthesis FAIL (latency > target)   → directive_planning    (max 4×)
 - hls_synthesis FAIL (area > budget)      → directive_planning    (max 3×)
