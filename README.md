@@ -9,29 +9,10 @@
 
 ## Install
 
-### Option A — Marketplace (recommended)
+### Option A — Install script (recommended)
 
-Each plugin lives in its own isolated directory, so parallel installs have no
-file-lock conflicts on any platform:
-
-```text
-/plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
-/plugin install chip-design-architecture@digital-chip-design-agents
-/plugin install chip-design-rtl@digital-chip-design-agents
-/plugin install chip-design-verification@digital-chip-design-agents
-/plugin install chip-design-formal@digital-chip-design-agents
-/plugin install chip-design-synthesis@digital-chip-design-agents
-/plugin install chip-design-dft@digital-chip-design-agents
-/plugin install chip-design-sta@digital-chip-design-agents
-/plugin install chip-design-hls@digital-chip-design-agents
-/plugin install chip-design-pd@digital-chip-design-agents
-/plugin install chip-design-soc@digital-chip-design-agents
-/plugin install chip-design-compiler@digital-chip-design-agents
-/plugin install chip-design-firmware@digital-chip-design-agents
-/plugin install chip-design-fpga@digital-chip-design-agents
-```
-
-### Option B — Install script (local clone)
+Clone the repo and run one script — all 13 plugins are installed and enabled in a
+single step, no repeated commands needed.
 
 **macOS / Linux / Git Bash:**
 ```bash
@@ -48,6 +29,36 @@ cd digital-chip-design-agents
 ```
 
 Restart Claude Code after running — all 13 skills and agents will be active.
+
+### Option B — Marketplace (selective install)
+
+If you only need specific domains, install them individually via the Claude Code
+marketplace. First register the marketplace, then install the domains you need:
+
+```text
+/plugin marketplace add github:chuanseng-ng/digital-chip-design-agents
+```
+
+<details>
+<summary>Individual plugin install commands (click to expand)</summary>
+
+```text
+/plugin install chip-design-architecture@digital-chip-design-agents
+/plugin install chip-design-rtl@digital-chip-design-agents
+/plugin install chip-design-verification@digital-chip-design-agents
+/plugin install chip-design-formal@digital-chip-design-agents
+/plugin install chip-design-synthesis@digital-chip-design-agents
+/plugin install chip-design-dft@digital-chip-design-agents
+/plugin install chip-design-sta@digital-chip-design-agents
+/plugin install chip-design-hls@digital-chip-design-agents
+/plugin install chip-design-pd@digital-chip-design-agents
+/plugin install chip-design-soc@digital-chip-design-agents
+/plugin install chip-design-compiler@digital-chip-design-agents
+/plugin install chip-design-firmware@digital-chip-design-agents
+/plugin install chip-design-fpga@digital-chip-design-agents
+```
+
+</details>
 
 ### Usage — describe your task in natural language
 
@@ -112,7 +123,7 @@ If routing DRC fails → retry routing (max 3×).
 If signoff timing fails → loop back to timing_opt (max 2×).  
 If any loop exceeds its limit → escalate to you with full state + recommendations.
 
-All 13 orchestrators follow the same pattern with domain-specific stages and criteria.
+All 13 domain orchestrators follow the same pattern with domain-specific stages and criteria.
 
 ---
 
