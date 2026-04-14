@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Full digital chip design pipeline — 13 domains from architecture through tape-out and firmware.",
-    "version": "1.0.0"
+    "version": "1.2.0"
   },
   "plugins": [
     {
