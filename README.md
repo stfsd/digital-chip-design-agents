@@ -60,6 +60,32 @@ marketplace. First register the marketplace, then install the domains you need:
 
 </details>
 
+### Option C — Other AI assistants (Copilot / Gemini / OpenCode)
+
+Run the install script from your chip design project directory with `--ide`:
+
+```bash
+# GitHub Copilot — creates .github/instructions/ in your project
+bash /path/to/digital-chip-design-agents/install.sh --ide copilot
+# Commit the generated .github/ files to share rules with your team.
+
+# Gemini Code Assist — creates GEMINI.md in your project (or ~/GEMINI.md with --global)
+bash /path/to/digital-chip-design-agents/install.sh --ide gemini
+
+# OpenCode — creates opencode.json in your project; use /mode chip-<domain> to activate
+bash /path/to/digital-chip-design-agents/install.sh --ide opencode
+
+# All IDEs at once (also installs Claude Code)
+bash /path/to/digital-chip-design-agents/install.sh --ide all
+```
+
+**Windows (PowerShell):** replace `bash install.sh` with `.\install.ps1` and `--ide` with `-IDE`.
+
+Domain knowledge is loaded directly from the plugin source files — no duplicate content.
+Re-run the install command to pick up any future updates.
+
+---
+
 ### Usage — describe your task in natural language
 
 ```
@@ -149,6 +175,16 @@ digital-chip-design-agents/
 │   │   ├── agents/rtl-design-orchestrator.md
 │   │   └── skills/rtl-design/SKILL.md
 │   └── ... (13 total, same layout each)
+│
+├── ides/                        ← IDE-specific config files (non-Claude)
+│   ├── copilot/
+│   │   ├── .github/
+│   │   │   └── copilot-instructions.md   ← global Copilot workspace instructions
+│   │   └── applyto-map.json     ← domain → file-glob mapping for per-domain rules
+│   ├── gemini/
+│   │   └── gemini-header.md     ← preamble injected into generated GEMINI.md
+│   └── opencode/
+│       └── opencode-base.json   ← base OpenCode config template
 │
 └── .github/
     └── workflows/

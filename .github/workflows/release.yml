@@ -84,6 +84,12 @@ jobs:
           Logic Synthesis · DFT · STA · HLS · Physical Design · SoC Integration ·
           Compiler Toolchain · Embedded Firmware · FPGA Emulation
 
+          ### Other IDE Support
+          The same domain knowledge is available for non-Claude IDEs via the install script:
+          - **GitHub Copilot**: \`bash install.sh --ide copilot\`
+          - **Gemini Code Assist**: \`bash install.sh --ide gemini\`
+          - **OpenCode**: \`bash install.sh --ide opencode\` (use \`/mode chip-<domain>\`)
+
           See CHANGELOG.md for full details.
           EOF
 

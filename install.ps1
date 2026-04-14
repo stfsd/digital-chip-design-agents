@@ -1,39 +1,47 @@
-﻿# install.ps1 - sets up all 13 digital-chip-design-agents plugins for Claude Code
-# Run from the repo root in PowerShell:  .\install.ps1
+# install.ps1 - installs digital-chip-design-agents plugins
+#
+# Usage:
+#   .\install.ps1                           # Claude Code (default)
+#   .\install.ps1 -IDE claude               # Claude Code (explicit)
+#   .\install.ps1 -IDE copilot              # GitHub Copilot (.github\ in cwd)
+#   .\install.ps1 -IDE gemini               # Gemini Code Assist (GEMINI.md in cwd)
+#   .\install.ps1 -IDE gemini -Global       # Gemini global (~\GEMINI.md)
+#   .\install.ps1 -IDE opencode             # OpenCode (opencode.json in cwd)
+#   .\install.ps1 -IDE opencode -Global     # OpenCode global (~\.config\opencode\)
+#   .\install.ps1 -IDE all                  # Claude Code + all three IDEs
+#
 #Requires -Version 5.1
+[CmdletBinding()]
+param(
+    [ValidateSet("claude","copilot","gemini","opencode","all")]
+    [string]$IDE = "claude",
+    [switch]$Global
+)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$RepoDir    = $PSScriptRoot
+$RepoDir     = $PSScriptRoot
 $Marketplace = "digital-chip-design-agents"
-$Version    = "1.0.0"
+$Version     = "1.0.0"
 
-# ── Locate Claude config dir ──────────────────────────────────────────────────
-$ClaudeDir = if ($env:CLAUDE_CONFIG_DIR) {
-    $env:CLAUDE_CONFIG_DIR
-} else {
-    Join-Path $env:USERPROFILE ".claude"
+# ── Locate python3 ────────────────────────────────────────────────────────────
+$Python = "python3"
+if (-not (Get-Command python3 -ErrorAction SilentlyContinue)) {
+    if (Get-Command python -ErrorAction SilentlyContinue) {
+        $Python = "python"
+    } else {
+        Write-Error "python3 (or python) is required but not found in PATH."
+        exit 1
+    }
 }
 
-$CacheDir = Join-Path $ClaudeDir "plugins\cache\$Marketplace"
-$Settings = Join-Path $ClaudeDir "settings.json"
-
-Write-Host "Claude config : $ClaudeDir"
-Write-Host "Plugin cache  : $CacheDir"
-Write-Host ""
-
-# ── Sanity checks ─────────────────────────────────────────────────────────────
-if (-not (Test-Path $ClaudeDir)) {
-    Write-Error "Claude config directory not found at '$ClaudeDir'.`nMake sure Claude Code is installed and has been run at least once."
-    exit 1
-}
-
+# ── Shared sanity checks ──────────────────────────────────────────────────────
 if (-not (Test-Path (Join-Path $RepoDir ".claude-plugin\marketplace.json"))) {
-    Write-Error "Run this script from the repo root."
+    Write-Error "Cannot locate repo root. Ensure install.ps1 is inside the cloned repo."
     exit 1
 }
 
-# ── Plugin list ───────────────────────────────────────────────────────────────
+# ── Plugin list & mapping ─────────────────────────────────────────────────────
 $Plugins = @(
     "chip-design-architecture",  "chip-design-rtl",
     "chip-design-verification",  "chip-design-formal",
@@ -44,7 +52,6 @@ $Plugins = @(
     "chip-design-fpga"
 )
 
-# ── Plugin → source directory mapping ────────────────────────────────────────
 $PluginDirs = @{
     "chip-design-architecture" = "architecture"
     "chip-design-rtl"          = "rtl-design"
@@ -61,70 +68,277 @@ $PluginDirs = @{
     "chip-design-fpga"         = "fpga"
 }
 
-# ── Populate plugin cache ─────────────────────────────────────────────────────
-Write-Host "Installing plugin cache..."
-foreach ($Plugin in $Plugins) {
-    $Subdir = $PluginDirs[$Plugin]
-    $Src    = Join-Path $RepoDir "plugins\$Subdir"
-    $Dest   = Join-Path $CacheDir "$Plugin\$Version"
-
-    if (Test-Path $Dest) { Remove-Item $Dest -Recurse -Force }
-    New-Item -ItemType Directory -Path $Dest -Force | Out-Null
-
-    Copy-Item (Join-Path $Src "agents")         $Dest -Recurse -Force
-    Copy-Item (Join-Path $Src "skills")         $Dest -Recurse -Force
-    Copy-Item (Join-Path $Src ".claude-plugin") $Dest -Recurse -Force
-
-    $Readme  = Join-Path $RepoDir "README.md"
-    if (Test-Path $Readme)  { Copy-Item $Readme  $Dest -Force }
-    $License = Join-Path $RepoDir "LICENSE"
-    if (Test-Path $License) { Copy-Item $License $Dest -Force }
-
-    Write-Host "  [OK] $Plugin"
+# Helper: run a Python script stored in a temp file, then clean up
+function Invoke-PythonScript {
+    param([string]$ScriptContent, [string[]]$Args = @())
+    $tmp = [System.IO.Path]::GetTempFileName() + ".py"
+    try {
+        $ScriptContent | Set-Content $tmp -Encoding UTF8
+        & $Python $tmp @Args
+        if ($LASTEXITCODE -ne 0) { throw "Python script failed (exit $LASTEXITCODE)" }
+    } finally {
+        if (Test-Path $tmp) { Remove-Item $tmp -Force }
+    }
 }
 
-# ── Update settings.json ──────────────────────────────────────────────────────
-Write-Host ""
-Write-Host "Updating $Settings ..."
+# ═══════════════════════════════════════════════════════════════════════════════
+# Claude Code install
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($IDE -eq "claude" -or $IDE -eq "all") {
 
-$Cfg = if (Test-Path $Settings) {
-    Get-Content $Settings -Raw | ConvertFrom-Json
-} else {
-    [PSCustomObject]@{}
+    $ClaudeDir = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR }
+                 else { Join-Path $env:USERPROFILE ".claude" }
+
+    $CacheDir  = Join-Path $ClaudeDir "plugins\cache\$Marketplace"
+    $Settings  = Join-Path $ClaudeDir "settings.json"
+
+    Write-Host "Claude config : $ClaudeDir"
+    Write-Host "Plugin cache  : $CacheDir"
+    Write-Host ""
+
+    if (-not (Test-Path $ClaudeDir)) {
+        Write-Error "Claude config directory not found at '$ClaudeDir'.`nMake sure Claude Code is installed and has been run at least once."
+        exit 1
+    }
+
+    Write-Host "Installing Claude Code plugin cache..."
+    foreach ($Plugin in $Plugins) {
+        $Subdir = $PluginDirs[$Plugin]
+        $Src    = Join-Path $RepoDir "plugins\$Subdir"
+        $Dest   = Join-Path $CacheDir "$Plugin\$Version"
+
+        if (Test-Path $Dest) { Remove-Item $Dest -Recurse -Force }
+        New-Item -ItemType Directory -Path $Dest -Force | Out-Null
+
+        Copy-Item (Join-Path $Src "agents")         $Dest -Recurse -Force
+        Copy-Item (Join-Path $Src "skills")         $Dest -Recurse -Force
+        Copy-Item (Join-Path $Src ".claude-plugin") $Dest -Recurse -Force
+
+        $Readme  = Join-Path $RepoDir "README.md"
+        if (Test-Path $Readme)  { Copy-Item $Readme  $Dest -Force }
+        $License = Join-Path $RepoDir "LICENSE"
+        if (Test-Path $License) { Copy-Item $License $Dest -Force }
+
+        Write-Host "  [OK] $Plugin"
+    }
+
+    Write-Host ""
+    Write-Host "Updating $Settings ..."
+
+    $SettingsPy = @'
+import json, sys, os
+
+settings_path = sys.argv[1]
+marketplace   = sys.argv[2]
+
+plugins = [
+  "chip-design-architecture", "chip-design-rtl", "chip-design-verification",
+  "chip-design-formal",       "chip-design-synthesis", "chip-design-dft",
+  "chip-design-sta",          "chip-design-hls",       "chip-design-pd",
+  "chip-design-soc",          "chip-design-compiler",  "chip-design-firmware",
+  "chip-design-fpga",
+]
+
+cfg = {}
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        cfg = json.load(f)
+
+enabled = cfg.setdefault("enabledPlugins", {})
+for p in plugins:
+    enabled[f"{p}@{marketplace}"] = True
+
+mp = cfg.setdefault("extraKnownMarketplaces", {})
+mp[marketplace] = {
+    "source": {"source": "directory", "path": sys.argv[3]}
 }
 
-# Ensure enabledPlugins exists
-if (-not ($Cfg.PSObject.Properties.Name -contains "enabledPlugins")) {
-    $Cfg | Add-Member -MemberType NoteProperty -Name "enabledPlugins" -Value ([PSCustomObject]@{})
+with open(settings_path, "w") as f:
+    json.dump(cfg, f, indent=2)
+    f.write("\n")
+
+print(f"  [OK] {len(plugins)} plugins enabled in settings.json")
+'@
+    Invoke-PythonScript -ScriptContent $SettingsPy -Args @($Settings, $Marketplace, $RepoDir)
+
+    Write-Host ""
+    Write-Host "Done! Restart Claude Code to activate all 13 plugins."
 }
-foreach ($Plugin in $Plugins) {
-    $Key = "${Plugin}@${Marketplace}"
-    if (-not ($Cfg.enabledPlugins.PSObject.Properties.Name -contains $Key)) {
-        $Cfg.enabledPlugins | Add-Member -MemberType NoteProperty -Name $Key -Value $true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GitHub Copilot install
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($IDE -eq "copilot" -or $IDE -eq "all") {
+
+    Write-Host ""
+    Write-Host "Installing GitHub Copilot instructions..."
+
+    $TargetDir = (Get-Location).Path
+
+    $CopilotPy = @'
+import json, os, re, glob, sys, shutil
+
+repo_dir   = sys.argv[1]
+target_dir = sys.argv[2]
+
+applyto_map = json.load(open(os.path.join(repo_dir, 'ides', 'copilot', 'applyto-map.json')))
+
+gh_dir = os.path.join(target_dir, '.github', 'instructions')
+os.makedirs(gh_dir, exist_ok=True)
+shutil.copy(
+    os.path.join(repo_dir, 'ides', 'copilot', '.github', 'copilot-instructions.md'),
+    os.path.join(target_dir, '.github', 'copilot-instructions.md'),
+)
+
+skill_files = sorted(glob.glob(os.path.join(repo_dir, 'plugins', '*', 'skills', '*', 'SKILL.md')))
+for skill_path in skill_files:
+    parts  = os.path.normpath(skill_path).split(os.sep)
+    domain = parts[parts.index('plugins') + 1]
+
+    applyto = applyto_map.get(domain, '**/*')
+    content = open(skill_path, encoding='utf-8').read()
+    body    = re.sub(r'^---\n.*?\n---\n', '', content, count=1, flags=re.DOTALL).strip()
+
+    out_path = os.path.join(gh_dir, domain + '.instructions.md')
+    with open(out_path, 'w', encoding='utf-8') as f:
+        f.write('---\napplyTo: "' + applyto + '"\n---\n\n' + body + '\n')
+    print('  [OK] .github/instructions/' + domain + '.instructions.md')
+
+print('\nCopilot: ' + str(len(skill_files)) + ' instruction files installed.')
+print('Commit .github/ to share domain rules with your team.')
+'@
+    Invoke-PythonScript -ScriptContent $CopilotPy -Args @($RepoDir, $TargetDir)
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Gemini Code Assist install
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($IDE -eq "gemini" -or $IDE -eq "all") {
+
+    Write-Host ""
+    Write-Host "Installing Gemini Code Assist context file..."
+
+    $GeminiTarget = if ($Global) {
+        Join-Path $env:USERPROFILE "GEMINI.md"
     } else {
-        $Cfg.enabledPlugins.$Key = $true
+        Join-Path (Get-Location).Path "GEMINI.md"
     }
+
+    $GeminiPy = @'
+import os, glob, sys
+
+repo_dir = sys.argv[1]
+out_path = sys.argv[2]
+
+header = open(os.path.join(repo_dir, 'ides', 'gemini', 'gemini-header.md'), encoding='utf-8').read().strip()
+
+lines = [
+    '# Digital Chip Design Agents --- Gemini Context',
+    '<!-- Generated by install.ps1 -IDE gemini -->',
+    '<!-- Source: ' + repo_dir + ' -->',
+    '',
+    header,
+    '',
+    '## Domain Knowledge',
+    '',
+]
+
+skill_files = sorted(glob.glob(os.path.join(repo_dir, 'plugins', '*', 'skills', '*', 'SKILL.md')))
+agent_map   = {
+    os.path.basename(os.path.dirname(os.path.dirname(p))): p
+    for p in glob.glob(os.path.join(repo_dir, 'plugins', '*', 'agents', '*.md'))
 }
 
-# Ensure extraKnownMarketplaces exists
-if (-not ($Cfg.PSObject.Properties.Name -contains "extraKnownMarketplaces")) {
-    $Cfg | Add-Member -MemberType NoteProperty -Name "extraKnownMarketplaces" -Value ([PSCustomObject]@{})
+for skill_path in skill_files:
+    parts  = os.path.normpath(skill_path).split(os.sep)
+    domain = parts[parts.index('plugins') + 1]
+    lines.append('### ' + domain)
+    lines.append('')
+    lines.append('@' + skill_path)
+    if domain in agent_map:
+        lines.append('@' + agent_map[domain])
+    lines.append('')
+
+with open(out_path, 'w', encoding='utf-8') as f:
+    f.write('\n'.join(lines) + '\n')
+
+print('  [OK] ' + out_path)
+print('  (' + str(len(skill_files)) + ' domains, ' + str(len(skill_files) + len(agent_map)) + ' @-imports)')
+'@
+    Invoke-PythonScript -ScriptContent $GeminiPy -Args @($RepoDir, $GeminiTarget)
 }
-# Always overwrite the marketplace source so it points to the current clone location
-$MarketplaceSource = [PSCustomObject]@{
-    source = [PSCustomObject]@{
-        source = "directory"
-        path   = $RepoDir
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OpenCode install
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($IDE -eq "opencode" -or $IDE -eq "all") {
+
+    Write-Host ""
+    Write-Host "Installing OpenCode config..."
+
+    $OpenCodeTarget = if ($Global) {
+        Join-Path $env:USERPROFILE ".config\opencode\config.json"
+    } else {
+        Join-Path (Get-Location).Path "opencode.json"
     }
-}
-if ($Cfg.extraKnownMarketplaces.PSObject.Properties.Name -contains $Marketplace) {
-    $Cfg.extraKnownMarketplaces.$Marketplace = $MarketplaceSource
-} else {
-    $Cfg.extraKnownMarketplaces | Add-Member -MemberType NoteProperty -Name $Marketplace -Value $MarketplaceSource
+
+    $IsGlobalStr = if ($Global) { "true" } else { "false" }
+
+    $OpenCodePy = @'
+import json, os, glob, re, sys
+
+repo_dir  = sys.argv[1]
+target    = sys.argv[2]
+is_global = sys.argv[3] == 'true'
+
+mode_display = {
+    'architecture': ('chip-architecture', 'Chip Architecture Evaluation'),
+    'rtl-design':   ('chip-rtl',          'RTL Design (SystemVerilog)'),
+    'verification': ('chip-verification', 'Functional Verification (UVM)'),
+    'formal':       ('chip-formal',       'Formal Verification (FPV/LEC)'),
+    'synthesis':    ('chip-synthesis',    'Logic Synthesis'),
+    'dft':          ('chip-dft',          'Design for Test'),
+    'sta':          ('chip-sta',          'Static Timing Analysis'),
+    'hls':          ('chip-hls',          'High-Level Synthesis'),
+    'pd':           ('chip-pd',           'Physical Design'),
+    'soc':          ('chip-soc',          'SoC IP Integration'),
+    'compiler':     ('chip-compiler',     'Compiler Toolchain'),
+    'firmware':     ('chip-firmware',     'Embedded Firmware'),
+    'fpga':         ('chip-fpga',         'FPGA Emulation'),
 }
 
-$Cfg | ConvertTo-Json -Depth 10 | Set-Content $Settings -Encoding UTF8
-Write-Host "  [OK] $($Plugins.Count) plugins enabled in settings.json"
+base  = json.load(open(os.path.join(repo_dir, 'ides', 'opencode', 'opencode-base.json')))
+modes = {}
 
-Write-Host ""
-Write-Host "Done! Restart Claude Code to activate all 13 plugins."
+agent_files = sorted(glob.glob(os.path.join(repo_dir, 'plugins', '*', 'agents', '*.md')))
+for agent_path in agent_files:
+    parts  = os.path.normpath(agent_path).split(os.sep)
+    domain = parts[parts.index('plugins') + 1]
+
+    content = open(agent_path, encoding='utf-8').read()
+    m = re.search(r'^description:\s*>?\s*\n((?:  .+\n)+)', content, re.MULTILINE)
+    desc = ' '.join(l.strip() for l in m.group(1).strip().splitlines()) if m else domain
+    desc = desc[:120]
+
+    mode_key, mode_name = mode_display.get(domain, ('chip-' + domain, domain.replace('-', ' ').title()))
+    modes[mode_key] = {'name': mode_name, 'description': desc, 'prompt': agent_path}
+
+if is_global and os.path.exists(target):
+    existing = json.load(open(target))
+    existing.setdefault('modes', {}).update(modes)
+    out = existing
+else:
+    base['modes'] = modes
+    out = base
+    if is_global:
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+
+with open(target, 'w', encoding='utf-8') as f:
+    json.dump(out, f, indent=2)
+    f.write('\n')
+
+print('  [OK] ' + target + ' --- ' + str(len(modes)) + ' modes')
+print('  Use /mode chip-<domain> in OpenCode to activate a domain.')
+'@
+    Invoke-PythonScript -ScriptContent $OpenCodePy -Args @($RepoDir, $OpenCodeTarget, $IsGlobalStr)
+}
