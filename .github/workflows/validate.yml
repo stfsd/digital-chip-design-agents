@@ -132,3 +132,54 @@ jobs:
               f"Count mismatch — expected 13 each: skills={skill_count}, agents={agent_count}, marketplace={mp_count}"
           print("Count check PASSED")
           PYEOF
+
+      - name: Validate IDE config files
+        run: |
+          python3 << 'PYEOF'
+          import json, os, sys
+
+          errors = []
+
+          # applyto-map.json must have all 13 domains
+          applyto_path = "ides/copilot/applyto-map.json"
+          if not os.path.isfile(applyto_path):
+              errors.append(f"Missing: {applyto_path}")
+          else:
+              applyto = json.load(open(applyto_path))
+              if len(applyto) != 13:
+                  errors.append(f"{applyto_path}: expected 13 domains, got {len(applyto)}")
+              else:
+                  print(f"OK: {applyto_path} — {len(applyto)} domains")
+
+          # copilot-instructions.md must exist
+          cpi_path = "ides/copilot/.github/copilot-instructions.md"
+          if not os.path.isfile(cpi_path):
+              errors.append(f"Missing: {cpi_path}")
+          else:
+              print(f"OK: {cpi_path}")
+
+          # gemini-header.md must exist and be non-empty
+          gh_path = "ides/gemini/gemini-header.md"
+          if not os.path.isfile(gh_path):
+              errors.append(f"Missing: {gh_path}")
+          elif os.path.getsize(gh_path) == 0:
+              errors.append(f"{gh_path}: file is empty")
+          else:
+              print(f"OK: {gh_path}")
+
+          # opencode-base.json must be valid JSON with model field
+          ob_path = "ides/opencode/opencode-base.json"
+          if not os.path.isfile(ob_path):
+              errors.append(f"Missing: {ob_path}")
+          else:
+              base = json.load(open(ob_path))
+              if "model" not in base:
+                  errors.append(f"{ob_path}: missing 'model' field")
+              else:
+                  print(f"OK: {ob_path} — model={base['model']}")
+
+          if errors:
+              for e in errors: print(f"ERROR: {e}", file=sys.stderr)
+              sys.exit(1)
+          print("IDE config files OK")
+          PYEOF
