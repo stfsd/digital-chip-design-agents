@@ -32,6 +32,21 @@ to run on real silicon — correctness here enables all subsequent SW developmen
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **GCC cross-compiler** (`arm-none-eabi-gcc`, `riscv64-unknown-elf-gcc`) — bare-metal firmware compilation
+- **OpenOCD** (`openocd`) — open-source on-chip debugger; supports JTAG/SWD for bring-up
+- **GDB cross-debugger** (`arm-none-eabi-gdb`) — source-level debugging over OpenOCD
+- **QEMU** (`qemu-system-arm`, `qemu-system-riscv64`) — firmware validation before hardware is available
+
+### Proprietary
+- **J-Link GDB Server** (`JLinkGDBServer`) — high-speed JTAG/SWD probe from SEGGER
+- **Lauterbach TRACE32** (`t32marm`) — hardware trace and debug for bring-up
+- **Arm Development Studio** (`armds`) — Eclipse-based IDE with Arm compiler and debugger
+
+---
+
 ## Stage: bsp_development
 
 ### Domain Rules

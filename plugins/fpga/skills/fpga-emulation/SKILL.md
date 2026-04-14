@@ -32,6 +32,23 @@ provides functional and architectural validation months before silicon.
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **Yosys** (`yosys`) — open-source synthesis for Xilinx/Intel/Lattice FPGA targets
+- **nextpnr** (`nextpnr-xilinx`, `nextpnr-ice40`, `nextpnr-ecp5`) — place-and-route for open-source flows
+- **OpenFPGALoader** (`openFPGALoader`) — universal FPGA programmer
+- **Project IceStorm** — iCE40 FPGA toolchain (icepack, iceprog, icetime)
+- **Project X-Ray** — Xilinx 7-series bitstream documentation
+
+### Proprietary
+- **Xilinx Vivado** (`vivado`) — synthesis, implementation, and bitstream generation for AMD/Xilinx
+- **Intel Quartus** (`quartus_sh`) — synthesis and programming for Intel/Altera FPGAs
+- **Microchip Libero** (`libero`) — synthesis and programming for PolarFire/SmartFusion FPGAs
+- **Synopsys Synplify** — FPGA synthesis front-end targeting multiple device families
+
+---
+
 ## Stage: rtl_adaptation
 
 ### ASIC → FPGA Substitutions

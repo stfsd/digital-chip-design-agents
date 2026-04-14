@@ -32,6 +32,21 @@ integration, and chip-level simulation sign-off.
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **Verilator** (`verilator`) — fast simulation of the integrated top-level
+- **cocotb** — Python co-simulation for bus-fabric and peripheral tests
+- **FuseSoC** (`fusesoc`) — IP package manager and build system for SoC integration
+- **Edalize** — EDA tool abstraction layer used with FuseSoC
+
+### Proprietary
+- **Synopsys VCS** (`vcs`) — chip-level simulation with coverage
+- **Cadence Xcelium** (`xrun`) — multi-language chip-level simulation
+- **Siemens Questa** (`vsim`) — chip-level simulation and protocol checking
+
+---
+
 ## Stage: ip_procurement
 
 ### IP Qualification Checklist
