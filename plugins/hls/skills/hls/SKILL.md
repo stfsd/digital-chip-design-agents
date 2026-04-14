@@ -32,6 +32,21 @@ and co-simulation to verify RTL matches the golden C model.
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **Bambu HLS** (`bambu`) — open-source HLS from Politecnico di Milano
+- **LegUp HLS** — FPGA-targeted HLS built on LLVM
+- **Calyx / Futil** — infrastructure for HLS compilers (academic)
+- **MLIR/CIRCT** (`circt-opt`) — compiler infrastructure for hardware design
+
+### Proprietary
+- **Xilinx Vitis HLS** (`vitis_hls`) — C/C++ to RTL for AMD/Xilinx devices
+- **Cadence Stratus** (`stratus`) — SystemC/C++ HLS for ASIC and FPGA
+- **Siemens Catapult** (`catapult`) — algorithmic synthesis from C++/SystemC
+
+---
+
 ## Stage: algorithm_analysis
 
 ### HLS-Hostile Patterns (must fix before synthesis)

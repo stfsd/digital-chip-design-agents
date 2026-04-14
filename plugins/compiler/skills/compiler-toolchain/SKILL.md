@@ -32,6 +32,20 @@ toolchain no software can run on the designed chip.
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **LLVM/Clang** (`clang`, `llc`, `llvm-mc`, `llvm-objdump`) — primary toolchain for new ISA backends
+- **GCC and GNU Binutils** (`gcc`, `as`, `ld`, `objdump`) — alternative backend; well-tested for RISC-V extensions
+- **QEMU** (`qemu-system-*`) — instruction-accurate ISA emulation for toolchain validation without hardware
+
+### Proprietary
+- **Green Hills MULTI** — safety-critical compiler and debugger IDE
+- **IAR Embedded Workbench** — certified compiler for ARM/RISC-V
+- **Arm Compiler 6** (`armcc`) — LLVM-based compiler for Arm targets
+
+---
+
 ## Stage: isa_analysis
 
 ### ISA Feature → Toolchain Component Mapping

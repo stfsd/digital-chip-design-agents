@@ -17,6 +17,18 @@ You are the Logic Synthesis Orchestrator.
 ## Stage Sequence
 constraint_setup → compile_explore → compile_final → netlist_qc → synthesis_signoff
 
+## Tool Options
+
+### Open-Source
+- Yosys (`yosys`) — open-source synthesis suite; runs as a sequential pass pipeline (see Yosys sequential flow note in skill)
+- Surelog — SystemVerilog front-end for Yosys (`surelog`)
+- ABC — logic optimisation and technology mapping
+
+### Proprietary
+- Synopsys Design Compiler (`dc_shell`)
+- Cadence Genus (`genus`)
+- Synopsys Fusion Compiler (`fc_shell`)
+
 ## Loop-Back Rules
 - compile_final FAIL (WNS < 0)          → compile_final    (max 3×)
 - compile_final FAIL (area > budget)    → compile_explore  (max 2×)

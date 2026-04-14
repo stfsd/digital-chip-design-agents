@@ -17,6 +17,18 @@ You are the Physical Design Orchestrator.
 ## Stage Sequence
 floorplan → placement → cts → routing → timing_optimization → power_optimization → area_optimization → signoff
 
+## Tool Options
+
+### Open-Source
+- OpenROAD / ORFS (`make DESIGN_CONFIG=...`) — executes the full PD pipeline sequentially; read per-stage logs after run (see sequential flow note in skill)
+- LibreLane / OpenLane 2 (`openlane <config.json>`) — sequential pipeline; read per-stage logs after run (see sequential flow note in skill)
+- KLayout — DRC, LVS, GDS viewing (`klayout`)
+
+### Proprietary
+- Cadence Innovus (`innovus`)
+- Synopsys IC Compiler 2 (`icc2_shell`)
+- Siemens Aprisa
+
 ## Loop-Back Rules
 - placement FAIL (WNS < −0.5 ns)              → floorplan             (max 2×)
 - routing FAIL (DRC violations > 0)            → routing               (max 3×)

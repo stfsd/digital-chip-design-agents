@@ -33,6 +33,22 @@ and synthesis handoff.
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **Verilator** (`verilator --lint-only`) — fast lint and simulation
+- **Slang** (`slang`) — modern, standards-compliant SV parser and elaborator
+- **Surelog** (`surelog`) — SystemVerilog pre-processor and front-end for Yosys
+- **sv2v** (`sv2v`) — SystemVerilog-to-Verilog converter
+- **Icarus Verilog** (`iverilog`) — Verilog/SV simulator for quick sanity checks
+
+### Proprietary
+- **Synopsys SpyGlass** (`spyglass`) — lint, CDC, RDC, and clock-domain analysis
+- **Cadence JasperGold CDC** (`jg`) — formal CDC verification
+- **Siemens Questa CDC** (`vsim`) — CDC analysis and sign-off
+
+---
+
 ## Stage: module_planning
 
 ### Domain Rules

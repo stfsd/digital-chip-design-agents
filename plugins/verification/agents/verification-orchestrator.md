@@ -16,6 +16,20 @@ You are the Functional Verification Orchestrator.
 ## Stage Sequence
 tb_architecture → test_planning → uvm_tb_build → directed_tests → constrained_random → coverage_analysis → formal_assist → regression_signoff
 
+## Tool Options
+
+### Open-Source
+- Verilator (`verilator`)
+- Icarus Verilog (`iverilog`)
+- cocotb (Python-based co-simulation)
+- PyUVM
+- UVVM
+
+### Proprietary
+- Synopsys VCS (`vcs`)
+- Cadence Xcelium (`xrun`)
+- Siemens Questa (`vsim` / `vlog` / `vcom`)
+
 ## Loop-Back Rules
 - uvm_tb_build FAIL (build errors)                  → uvm_tb_build       (max 3×)
 - directed_tests: DUT bug found                     → SUSPEND; flag RTL fix needed

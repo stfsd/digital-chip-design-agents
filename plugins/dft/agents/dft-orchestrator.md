@@ -16,6 +16,17 @@ You are the DFT Orchestrator.
 ## Stage Sequence
 dft_architecture → scan_insertion → atpg → bist_insertion → jtag_setup → dft_signoff
 
+## Tool Options
+
+### Open-Source
+- Yosys DFT plugins (`yosys`)
+- OpenROAD DFT utilities (`openroad`)
+
+### Proprietary
+- Synopsys TetraMAX ATPG (`tmax`)
+- Cadence Modus Test (`modus`)
+- Siemens Tessent (`tessent`)
+
 ## Loop-Back Rules
 - scan_insertion FAIL (DRC errors > 0)            → scan_insertion  (max 3×)
 - atpg FAIL (SAF coverage < target)               → scan_insertion  (max 2×)

@@ -32,6 +32,22 @@ with documented coverage and a clean regression.
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **Verilator** (`verilator`) — fast cycle-accurate simulator; UVM support via verilator+UVM
+- **Icarus Verilog** (`iverilog`) — event-driven simulation for quick testbench checks
+- **cocotb** — Python-based co-simulation framework (`pip install cocotb`)
+- **PyUVM** — UVM implementation in Python for cocotb environments
+- **UVVM** — VHDL verification methodology library
+
+### Proprietary
+- **Synopsys VCS** (`vcs`) — industry-standard SV/UVM simulator
+- **Cadence Xcelium** (`xrun`) — multi-language simulator with coverage engine
+- **Siemens Questa** (`vsim` / `vlog` / `vcom`) — mixed-language simulation with UVM support
+
+---
+
 ## Stage: tb_architecture
 
 ### Domain Rules

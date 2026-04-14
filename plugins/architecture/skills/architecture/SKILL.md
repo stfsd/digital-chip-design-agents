@@ -33,6 +33,21 @@ PPA modelling, risk assessment, and sign-off.
 
 ---
 
+## Supported EDA Tools
+
+### Open-Source
+- **gem5** (`gem5`) — full-system micro-architectural simulator for performance modelling
+- **McPAT** (`mcpat`) — processor power, area, and timing estimator
+- **CACTI** (`cacti`) — SRAM/cache power and area estimator
+- **Python estimation scripts** (`python3 estimate.py`) — custom PPA models
+
+### Proprietary
+- **Synopsys Platform Architect** — IP-level performance and power exploration
+- **ARM Performance Models** — cycle-accurate ARM subsystem models
+- **Cadence Virtual System Platform (VSP)** — SoC-level virtual prototyping
+
+---
+
 ## Stage: spec_analysis
 
 ### Domain Rules
