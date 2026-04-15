@@ -16,22 +16,24 @@ PYEOF
 fi
 
 LOG=$(mktemp /tmp/bambu-XXXXXX.log)
+START_TS=$(date +%s)
 set +e
 "$TOOL" "$@" >"$LOG" 2>&1
 EXIT_CODE=$?
 set -e
 
-python3 - "$LOG" "$EXIT_CODE" <<'PYEOF'
+python3 - "$LOG" "$EXIT_CODE" "$START_TS" <<'PYEOF'
 import json, re, sys, os
 
-log_path = sys.argv[1]
-exit_code = int(sys.argv[2])
+log_path        = sys.argv[1]
+exit_code       = int(sys.argv[2])
+invocation_start = float(sys.argv[3]) if len(sys.argv) > 3 else 0.0
 
 with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b', l, re.I)]
-warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN\b',  l, re.I)]
+warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN(?:ING)?\b', l, re.I)]
 
 # Bambu may write an XML report; try to parse it
 latency_m = re.search(r'Total latency[^\d]*([\d.]+)\s*cycles?', text, re.I)
@@ -42,7 +44,8 @@ bram_m    = re.search(r'BRAM\s+(\d+)', text, re.I)
 import xml.etree.ElementTree as ET
 import sys as _sys
 summary_from_xml = {}
-xml_candidates = [f for f in os.listdir('.') if f.endswith('_results.xml') or 'hls_report' in f]
+xml_candidates = [f for f in os.listdir('.') if (f.endswith('_results.xml') or 'hls_report' in f)
+                  and os.path.getmtime(f) >= invocation_start]
 for xf in xml_candidates:
     try:
         tree = ET.parse(xf)

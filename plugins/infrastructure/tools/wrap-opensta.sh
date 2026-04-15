@@ -13,10 +13,15 @@ PYEOF
 fi
 
 LOG=$(mktemp /tmp/opensta-XXXXXX.log)
-set +e
-"$TOOL" "$@" >"$LOG" 2>&1
-EXIT_CODE=$?
-set -e
+if [[ $# -eq 0 ]]; then
+  echo "error: no arguments provided; sta requires a script file (interactive mode not supported)" >"$LOG"
+  EXIT_CODE=1
+else
+  set +e
+  "$TOOL" "$@" >"$LOG" 2>&1
+  EXIT_CODE=$?
+  set -e
+fi
 
 python3 - "$LOG" "$EXIT_CODE" <<'PYEOF'
 import json, re, sys

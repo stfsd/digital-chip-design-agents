@@ -31,7 +31,7 @@ with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b|panic|fatal', l, re.I)]
-warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN\b', l, re.I)]
+warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN(?:ING)?\b', l, re.I)]
 
 sim_insts_m   = re.search(r'simInsts\s+(\d+)', text)
 host_secs_m   = re.search(r'hostSeconds\s+([\d.]+)', text)

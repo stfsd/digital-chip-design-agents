@@ -38,7 +38,7 @@ with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b', l, re.I)]
-warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN\b',  l, re.I)]
+warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN(?:ING)?\b', l, re.I)]
 
 passed_m   = re.search(r'TEST PASSED', text, re.I)
 failed_m   = re.search(r'TEST FAILED', text, re.I)
