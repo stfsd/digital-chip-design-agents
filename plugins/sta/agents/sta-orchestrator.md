@@ -27,6 +27,20 @@ constraint_validation → multi_corner_analysis → path_analysis → exception_
 - Synopsys PrimeTime (`pt_shell`)
 - Cadence Tempus (`tempus`)
 
+### MCP Preference
+Multi-corner ECO loops query timing repeatedly on the same loaded design — this is the
+highest-value MCP use case in the entire flow.
+
+1. **`opensta-session` MCP** (Tier 2, preferred) — call `load_design` once, then
+   `report_timing` / `report_slack_histogram` / `check_timing` per ECO iteration without
+   reloading liberty or parasitics; critical for the `eco_guidance → multi_corner_analysis`
+   loop which can iterate up to 10 times
+2. **`openroad-session` MCP** (Tier 2) — when using the OpenROAD STA subsystem on a
+   loaded PD database
+3. **`opensta` batch MCP** (Tier 1) — for one-shot report generation (no active ECO loop)
+4. **Wrapper script** — `wrap-opensta.sh` / `wrap-openroad.sh` if MCP not configured
+5. **Direct execution** — last resort; multi-corner timing reports are extremely large
+
 ## Loop-Back Rules
 - path_analysis: violations found             → exception_review       (unlimited)
 - exception_review: invalid exceptions       → path_analysis          (max 3×)

@@ -30,6 +30,12 @@ tb_architecture → test_planning → uvm_tb_build → directed_tests → constr
 - Cadence Xcelium (`xrun`)
 - Siemens Questa (`vsim` / `vlog` / `vcom`)
 
+### MCP Preference
+When invoking open-source tools, follow the execution hierarchy:
+1. **MCP server** — use `verilator` MCP if active in `.claude/settings.json` (lowest context overhead)
+2. **Wrapper script** — `wrap-verilator-sim.sh` (structured JSON with coverage and pass/fail)
+3. **Direct execution** — last resort; simulation logs and coverage data are very large
+
 ## Loop-Back Rules
 - uvm_tb_build FAIL (build errors)                  → uvm_tb_build       (max 3×)
 - directed_tests: DUT bug found                     → SUSPEND; flag RTL fix needed
