@@ -49,7 +49,7 @@ $Plugins = @(
     "chip-design-sta",           "chip-design-hls",
     "chip-design-pd",            "chip-design-soc",
     "chip-design-compiler",      "chip-design-firmware",
-    "chip-design-fpga"
+    "chip-design-fpga",          "chip-design-infrastructure"
 )
 
 $PluginDirs = @{
@@ -64,8 +64,9 @@ $PluginDirs = @{
     "chip-design-pd"           = "pd"
     "chip-design-soc"          = "soc"
     "chip-design-compiler"     = "compiler"
-    "chip-design-firmware"     = "firmware"
-    "chip-design-fpga"         = "fpga"
+    "chip-design-firmware"       = "firmware"
+    "chip-design-fpga"           = "fpga"
+    "chip-design-infrastructure" = "infrastructure"
 }
 
 # Helper: run a Python script stored in a temp file, then clean up
@@ -136,7 +137,7 @@ plugins = [
   "chip-design-formal",       "chip-design-synthesis", "chip-design-dft",
   "chip-design-sta",          "chip-design-hls",       "chip-design-pd",
   "chip-design-soc",          "chip-design-compiler",  "chip-design-firmware",
-  "chip-design-fpga",
+  "chip-design-fpga",         "chip-design-infrastructure",
 ]
 
 cfg = {}
@@ -162,7 +163,7 @@ print(f"  [OK] {len(plugins)} plugins enabled in settings.json")
     Invoke-PythonScript -ScriptContent $SettingsPy -Args @($Settings, $Marketplace, $RepoDir)
 
     Write-Host ""
-    Write-Host "Done! Restart Claude Code to activate all 13 plugins."
+    Write-Host "Done! Restart Claude Code to activate all 14 plugins."
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════

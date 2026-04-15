@@ -1,0 +1,10 @@
+{
+  "_comment": "OpenSTA MCP server — paste the mcpServers block into your .claude/settings.json",
+  "mcpServers": {
+    "opensta": {
+      "type": "stdio",
+      "command": "/absolute/path/to/plugins/infrastructure/tools/wrap-opensta.sh",
+      "args": []
+    }
+  }
+}

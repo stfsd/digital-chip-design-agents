@@ -1,0 +1,10 @@
+{
+  "_comment": "Yosys MCP server — paste the mcpServers block into your .claude/settings.json",
+  "mcpServers": {
+    "yosys": {
+      "type": "stdio",
+      "command": "/absolute/path/to/plugins/infrastructure/tools/wrap-yosys.sh",
+      "args": []
+    }
+  }
+}
