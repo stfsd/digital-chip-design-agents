@@ -29,6 +29,12 @@ constraint_setup → compile_explore → compile_final → netlist_qc → synthe
 - Cadence Genus (`genus`)
 - Synopsys Fusion Compiler (`fc_shell`)
 
+### MCP Preference
+When invoking open-source tools, follow the execution hierarchy:
+1. **MCP server** — use `yosys` MCP if active in `.claude/settings.json` (lowest context overhead)
+2. **Wrapper script** — `plugins/infrastructure/tools/wrap-yosys.sh` (structured JSON output)
+3. **Direct execution** — last resort; raw logs will consume significant context
+
 ## Loop-Back Rules
 - compile_final FAIL (WNS < 0)          → compile_final    (max 3×)
 - compile_final FAIL (area > budget)    → compile_explore  (max 2×)

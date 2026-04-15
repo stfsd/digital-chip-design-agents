@@ -31,6 +31,14 @@ rtl_adaptation → partitioning → fpga_synthesis → bring_up → sw_validatio
 - Microchip Libero (`libero`)
 - Synopsys Synplify
 
+### MCP Preference
+When invoking open-source tools, follow the execution hierarchy:
+1. **MCP server** — use `yosys` MCP for synthesis/P&R if active in `.claude/settings.json` (lowest context overhead);
+   use `symbiflow` MCP for bounded formal property checks only (`symbiflow` wraps SymbiYosys/`sby`,
+   not an FPGA synthesis tool — do not use it for `fpga_synthesis` or `partitioning` stages)
+2. **Wrapper script** — `wrap-yosys.sh` for synthesis; `wrap-symbiflow.sh` for formal checks (structured JSON output)
+3. **Direct execution** — last resort; FPGA synthesis and P&R logs are large
+
 ## Loop-Back Rules
 - fpga_synthesis FAIL (WNS < −0.5 ns)      → rtl_adaptation    (add pipeline regs) (max 3×)
 - fpga_synthesis FAIL (utilisation > 70%)  → partitioning                          (max 2×)

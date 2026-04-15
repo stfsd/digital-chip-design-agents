@@ -30,6 +30,12 @@ ip_procurement → ip_configuration → bus_fabric_setup → top_integration →
 - Cadence Xcelium (`xrun`)
 - Siemens Questa (`vsim`)
 
+### MCP Preference
+When invoking open-source tools, follow the execution hierarchy:
+1. **MCP server** — use `verilator` MCP if active in `.claude/settings.json` (lowest context overhead)
+2. **Wrapper script** — `wrap-verilator-sim.sh` (structured JSON with pass/fail and coverage)
+3. **Direct execution** — last resort; chip-level simulation logs are very large
+
 ## Loop-Back Rules
 - ip_configuration FAIL (timing/interface error)  → ip_procurement    (max 2×)
 - top_integration FAIL (connectivity errors)       → top_integration   (max 3×)

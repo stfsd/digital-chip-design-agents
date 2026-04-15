@@ -31,6 +31,12 @@ module_planning → rtl_coding → lint_check → cdc_rdc_analysis → synth_che
 - Cadence JasperGold CDC (`jg`)
 - Siemens Questa CDC (`vsim`)
 
+### MCP Preference
+When invoking open-source tools, follow the execution hierarchy:
+1. **MCP server** — use `verilator` MCP if active in `.claude/settings.json` (lowest context overhead)
+2. **Wrapper script** — `wrap-verilator-sim.sh` (structured JSON with lint error/warning counts)
+3. **Direct execution** — last resort; Verilator lint output accumulates quickly across loop-back iterations
+
 ## Loop-Back Rules
 - lint_check FAIL (errors > 0)               → rtl_coding        (max 5×)
 - cdc_rdc_analysis FAIL (unwaived violations) → rtl_coding        (max 3×)

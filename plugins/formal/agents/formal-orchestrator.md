@@ -31,6 +31,12 @@ property_planning → environment_setup → fpv_run → cex_analysis → lec_run
 - Synopsys VC Formal (`vcf`)
 - Siemens Questa Formal (`qformal`)
 
+### MCP Preference
+When invoking open-source tools, follow the execution hierarchy:
+1. **MCP server** — use `yosys` MCP if active in `.claude/settings.json` (lowest context overhead)
+2. **Wrapper script** — `wrap-yosys.sh` (structured JSON output)
+3. **Direct execution** — last resort; SymbiYosys/Yosys proof logs can be very large
+
 ## Loop-Back Rules
 - fpv_run: CEX found (RTL bug)           → (RTL fix required) → fpv_run    (unlimited, RTL-gated)
 - fpv_run: vacuous proof                 → environment_setup                (max 3×)

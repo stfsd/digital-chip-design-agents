@@ -57,6 +57,7 @@ Initialise and maintain this JSON state across all stages:
   "tools_missing": [],
   "wrappers_deployed": 0,
   "mcp_servers_configured": 0,
+  "mcp_target": 10,
   "loop_count": {},
   "current_stage": null,
   "flow_status": "not_started"
@@ -86,4 +87,4 @@ Each stage must return:
 2. Enforce loop-back rules strictly — do not proceed past a FAIL
 3. If max iterations exceeded: stop, present full state and escalation report
 4. Never auto-run `install-missing-tools.sh` — present it to the user for review
-5. On completion: confirm `tool-manifest.json` written, all 8 wrappers executable, and MCP snippets printed
+5. On completion: confirm `tool-manifest.json` written, all 8 wrappers executable, `mcp-adapter.py` and `mcp-session-adapter.py` present, and all 10 MCP config snippets written with resolved absolute paths and printed
