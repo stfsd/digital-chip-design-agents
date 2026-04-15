@@ -67,12 +67,55 @@ complete environment before any domain orchestrator begins work.
 
 ---
 
-## Execution Hierarchy
+## MCP Architecture — Two Tiers
 
-When running tools, prefer in this order:
-1. **MCP server** (lowest overhead, structured output directly in Claude context)
-2. **Wrapper script** (structured JSON output, tool not configured as MCP)
-3. **Direct execution** (last resort — raw log, no structured output)
+### Tier 1: Batch MCP servers (short, self-contained runs)
+Use these for tools whose output fits inside a single request/response cycle (seconds to
+a few minutes).  Each call spawns the wrapper script, captures its compact JSON output,
+and returns it.
+
+| MCP config | Tool | Typical duration |
+|------------|------|-----------------|
+| `mcp-yosys.json` | Yosys synthesis | seconds–minutes |
+| `mcp-openroad.json` | Single OpenROAD stage | minutes |
+| `mcp-opensta.json` | OpenSTA batch report | seconds–minutes |
+| `mcp-klayout.json` | KLayout DRC/LVS | minutes |
+| `mcp-verilator.json` | Verilator lint or sim | seconds–minutes |
+| `mcp-bambu.json` | Bambu HLS synthesis | minutes |
+| `mcp-gem5.json` | gem5 short benchmark run | minutes (set TOOL_TIMEOUT_S) |
+| `mcp-symbiflow.json` | SymbiYosys bounded proof | minutes–hours (set TOOL_TIMEOUT_S) |
+
+The adapter is `plugins/infrastructure/tools/mcp-adapter.py`.
+
+### Tier 2: Interactive session MCP servers (stateful, query-based)
+Use these when an agent iterates many times over an already-loaded design (e.g. ECO timing
+loops).  The process stays alive between calls — no re-loading per query.
+
+| MCP config | Tool | Exposed tools |
+|------------|------|---------------|
+| `mcp-openroad-session.json` | OpenROAD Tcl session | `load_design`, `query_timing`, `query_drc`, `get_design_area`, `get_power`, `run_tcl`, `close_design` |
+| `mcp-opensta-session.json` | OpenSTA Tcl session | `load_design`, `report_timing`, `report_slack_histogram`, `check_timing`, `run_tcl`, `close_design` |
+
+The adapter is `plugins/infrastructure/tools/mcp-session-adapter.py`.
+
+### Full-flow tools — do NOT use MCP
+These tools run for 30 min–2+ hours and produce structured output files on disk.
+Agents must launch them via Bash and read the output files directly.
+
+| Tool | Launch command | Read these files |
+|------|---------------|-----------------|
+| LibreLane / OpenLane 2 | `openlane config.json` | `runs/<design>/<tag>/metrics.json` |
+| ORFS / OpenROAD Flow Scripts | `make DESIGN_CONFIG=... finish` | `reports/<platform>/<design>/metrics.json` |
+| gem5 full-system simulation | `gem5 config.py ...` | `m5out/stats.txt`, `m5out/simout` |
+
+### Execution Hierarchy (per domain agent)
+1. **Tier 2 session MCP** — if the tool supports a session and the design is already loaded
+2. **Tier 1 batch MCP** — if the tool has a batch MCP server configured
+3. **Wrapper script** — if MCP is not configured; wrapper emits compact JSON
+4. **Direct execution** — last resort; raw logs consume significant context
+
+Domain agents must check whether the relevant MCP server is active in `.claude/settings.json`
+before falling back to the wrapper or direct execution.
 
 ---
 
@@ -164,12 +207,16 @@ Fields:
 ## Stage: mcp_configuration
 
 ### Domain Rules
-1. Emit MCP config snippets for OpenROAD, Yosys, and OpenSTA pointing to their wrappers
-2. Config must use `"type": "stdio"` and an absolute path to the wrapper as `command`
-3. Print each snippet with explicit instruction:
+1. Emit MCP config snippets for all 10 MCP configs (8 batch + 2 session)
+2. All batch configs use `"command": "python3"` with `mcp-adapter.py` — never point
+   directly to the wrapper script as the command; wrapper scripts are not MCP servers
+3. Session configs use `mcp-session-adapter.py` with `--tool openroad` or `--tool opensta`
+4. Resolve the absolute adapter and wrapper paths at runtime using `realpath` or `pwd` —
+   never leave the placeholder `/absolute/path/to/` in the emitted snippets
+5. Print each snippet with explicit instruction:
    "Paste the `mcpServers` block into your `.claude/settings.json`"
-4. Write the snippet files to `plugins/infrastructure/mcp/`
-5. Do not modify `.claude/settings.json` automatically — user must do this manually
+6. Write the snippet files to `plugins/infrastructure/mcp/`
+7. Do not modify `.claude/settings.json` automatically — user must do this manually
 
 ### MCP Config Template
 ```json
@@ -185,13 +232,28 @@ Fields:
 ```
 
 ### QoR Metrics to Evaluate
-- `mcp_servers_configured`: count of MCP snippet files written (target: 3)
+- `mcp_servers_configured`: count of MCP snippet files written (target: 10)
 
 ### Output Required
+Batch MCP configs (Tier 1):
 - `plugins/infrastructure/mcp/mcp-yosys.json`
 - `plugins/infrastructure/mcp/mcp-openroad.json`
 - `plugins/infrastructure/mcp/mcp-opensta.json`
-- Printed MCP config snippets for each tool
+- `plugins/infrastructure/mcp/mcp-klayout.json`
+- `plugins/infrastructure/mcp/mcp-verilator.json`
+- `plugins/infrastructure/mcp/mcp-bambu.json`
+- `plugins/infrastructure/mcp/mcp-gem5.json`
+- `plugins/infrastructure/mcp/mcp-symbiflow.json`
+
+Session MCP configs (Tier 2):
+- `plugins/infrastructure/mcp/mcp-openroad-session.json`
+- `plugins/infrastructure/mcp/mcp-opensta-session.json`
+
+Adapter scripts (required — MCP servers will not start without these):
+- `plugins/infrastructure/tools/mcp-adapter.py`
+- `plugins/infrastructure/tools/mcp-session-adapter.py`
+
+Printed MCP config snippets for each tool with resolved absolute paths
 
 ---
 
@@ -209,7 +271,8 @@ Fields:
 - [ ] `install-missing-tools.sh` generated (auto-run is user's choice)
 - [ ] `tool-manifest.json` written
 - [ ] All 8 wrappers deployed and executable
-- [ ] MCP config snippets written and printed
+- [ ] `mcp-adapter.py` and `mcp-session-adapter.py` present in `plugins/infrastructure/tools/`
+- [ ] All 10 MCP config snippets written with resolved absolute paths and printed
 - [ ] No critical-path tools missing
 
 ### Output Required
