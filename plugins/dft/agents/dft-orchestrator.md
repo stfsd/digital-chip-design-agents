@@ -27,6 +27,12 @@ dft_architecture → scan_insertion → atpg → bist_insertion → jtag_setup �
 - Cadence Modus Test (`modus`)
 - Siemens Tessent (`tessent`)
 
+### MCP Preference
+When invoking open-source tools, follow the execution hierarchy:
+1. **MCP server** — use `yosys` or `openroad` MCP if active in `.claude/settings.json` (lowest context overhead)
+2. **Wrapper script** — `wrap-yosys.sh` / `wrap-openroad.sh` (structured JSON output)
+3. **Direct execution** — last resort; scan insertion and DRC logs can be very large
+
 ## Loop-Back Rules
 - scan_insertion FAIL (DRC errors > 0)            → scan_insertion  (max 3×)
 - atpg FAIL (SAF coverage < target)               → scan_insertion  (max 2×)
