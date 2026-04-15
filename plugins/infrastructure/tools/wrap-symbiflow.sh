@@ -24,7 +24,7 @@ import json, re, sys
 log_path = sys.argv[1]
 exit_code = int(sys.argv[2])
 
-with open(log_path) as f:
+with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b', l, re.I)]
@@ -50,9 +50,9 @@ if counterexample_m:
 summary["error_count"]   = len(errors)
 summary["warning_count"] = len(warnings)
 
-if failed_props or exit_code != 0:
+if errors or failed_props or exit_code != 0:
     status = "FAIL"
-elif unknown_props:
+elif warnings or unknown_props:
     status = "WARN"
 else:
     status = "PASS"

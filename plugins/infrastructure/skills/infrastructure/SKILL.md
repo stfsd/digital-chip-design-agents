@@ -57,13 +57,13 @@ complete environment before any domain orchestrator begins work.
 - **OpenOCD** (`openocd`) — on-chip debugger
 
 ### Proprietary (detect only — never install)
-- **Synopsys VCS** — industry-standard RTL simulator
-- **Cadence Xcelium** — next-generation simulation platform
-- **Synopsys Design Compiler** — logic synthesis
-- **Cadence Innovus** — physical implementation
-- **Mentor QuestaSim** — advanced simulation and verification
-- **Synopsys PrimeTime** — sign-off static timing analysis
-- **Synopsys Formality** — formal equivalence checking
+- **Synopsys VCS** (`vcs`) — industry-standard RTL simulator
+- **Cadence Xcelium** (`xrun`, alt: `xmsim`) — next-generation simulation platform
+- **Synopsys Design Compiler** (`dc_shell`, alt: `dc_shell-t`) — logic synthesis
+- **Cadence Innovus** (`innovus`) — physical implementation
+- **Mentor QuestaSim** (`vsim`, alt: `questa`, `questasim`) — advanced simulation and verification
+- **Synopsys PrimeTime** (`pt_shell`, alt: `pt_shell64`) — sign-off static timing analysis
+- **Synopsys Formality** (`formality`, alt: `fm_shell`) — formal equivalence checking
 
 ---
 
@@ -80,11 +80,12 @@ When running tools, prefer in this order:
 
 ### Domain Rules
 1. Run `which <command>` and `<command> --version` (or `-version`) for every open-source tool
-2. For proprietary tools: check PATH only (`which <command>`); never attempt install
-3. Record each tool as one of: `FOUND`, `MISSING`, or `PROPRIETARY_ONLY`
-4. Capture exact version string for each `FOUND` tool
-5. Never attempt installation in this stage
-6. Write results to `tool-status.json` before advancing
+2. **Exception — Python packages**: for `cocotb`, use `cocotb-config --version` (not `which cocotb`) to determine FOUND and capture the version string; report MISSING if `cocotb-config` is absent or returns non-zero
+3. For proprietary tools: check PATH using `which <primary-executable>` only (see executable names in the Proprietary section above); never attempt install; record as `PROPRIETARY_ONLY` if found, `MISSING` otherwise
+4. Record each tool as one of: `FOUND`, `MISSING`, or `PROPRIETARY_ONLY`
+5. Capture exact version string for each `FOUND` tool
+6. Never attempt installation in this stage
+7. Write results to `tool-status.json` before advancing
 
 ### QoR Metrics to Evaluate
 - `tools_detected`: count of FOUND tools (target ≥ 10 for a functional open-source flow)
@@ -109,6 +110,7 @@ When running tools, prefer in this order:
 6. Write `tool-manifest.json` reflecting confirmed tool state after user runs the script
 
 ### Common Issues & Fixes
+
 | Issue | Fix |
 |-------|-----|
 | `python3` not found | Escalate immediately — all wrapper scripts depend on it |

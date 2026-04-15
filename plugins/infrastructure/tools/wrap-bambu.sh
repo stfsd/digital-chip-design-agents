@@ -5,9 +5,12 @@ set -euo pipefail
 TOOL="bambu-hls"
 
 if ! command -v "$TOOL" &>/dev/null; then
-  python3 - <<'PYEOF'
-import json
-print(json.dumps({"tool":"bambu","exit_code":1,"status":"FAIL","summary":{},"errors":["tool not found: bambu-hls"],"warnings":[],"raw_log":""}))
+  _LOG=$(mktemp /tmp/bambu-notfound-XXXXXX.log)
+  echo "tool not found: bambu-hls" > "$_LOG"
+  python3 - "$_LOG" <<'PYEOF'
+import json, sys
+log_path = sys.argv[1]
+print(json.dumps({"tool":"bambu","exit_code":1,"status":"FAIL","summary":{},"errors":["tool not found: bambu-hls"],"warnings":[],"raw_log":log_path}))
 PYEOF
   exit 1
 fi
@@ -24,7 +27,7 @@ import json, re, sys, os
 log_path = sys.argv[1]
 exit_code = int(sys.argv[2])
 
-with open(log_path) as f:
+with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b', l, re.I)]
@@ -36,10 +39,12 @@ dsp_m     = re.search(r'DSP\s+(\d+)', text, re.I)
 bram_m    = re.search(r'BRAM\s+(\d+)', text, re.I)
 
 # Also try parsing HLS report XML if present
+import xml.etree.ElementTree as ET
+import sys as _sys
+summary_from_xml = {}
 xml_candidates = [f for f in os.listdir('.') if f.endswith('_results.xml') or 'hls_report' in f]
 for xf in xml_candidates:
     try:
-        import xml.etree.ElementTree as ET
         tree = ET.parse(xf)
         root = tree.getroot()
         for tag, key in [('Latency', 'latency_cycles'), ('DSPs', 'dsp_count'), ('BRAMs', 'bram_count')]:
@@ -49,17 +54,24 @@ for xf in xml_candidates:
                     summary_from_xml[key] = int(el.text)
                 except ValueError:
                     pass
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[wrap-bambu] warning: could not parse {xf}: {e}", file=_sys.stderr)
 
 summary = {}
 if latency_m: summary["latency_cycles"] = float(latency_m.group(1))
 if dsp_m:     summary["dsp_count"]      = int(dsp_m.group(1))
 if bram_m:    summary["bram_count"]     = int(bram_m.group(1))
+# Merge XML-derived values for any metrics not already captured by regex
+if "latency_cycles" not in summary and "latency_cycles" in summary_from_xml:
+    summary["latency_cycles"] = float(summary_from_xml["latency_cycles"])
+if "dsp_count" not in summary and "dsp_count" in summary_from_xml:
+    summary["dsp_count"] = int(summary_from_xml["dsp_count"])
+if "bram_count" not in summary and "bram_count" in summary_from_xml:
+    summary["bram_count"] = int(summary_from_xml["bram_count"])
 summary["error_count"]   = len(errors)
 summary["warning_count"] = len(warnings)
 
-status = "PASS" if exit_code == 0 and not errors else ("WARN" if exit_code == 0 else "FAIL")
+status = "FAIL" if exit_code != 0 or errors else ("WARN" if warnings else "PASS")
 
 print(json.dumps({
     "tool":      "bambu",

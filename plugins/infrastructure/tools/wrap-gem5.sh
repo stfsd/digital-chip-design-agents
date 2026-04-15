@@ -5,9 +5,12 @@ set -euo pipefail
 TOOL="gem5"
 
 if ! command -v "$TOOL" &>/dev/null; then
-  python3 - <<'PYEOF'
-import json
-print(json.dumps({"tool":"gem5","exit_code":1,"status":"FAIL","summary":{},"errors":["tool not found: gem5"],"warnings":[],"raw_log":""}))
+  _LOG=$(mktemp /tmp/gem5-notfound-XXXXXX.log)
+  echo "tool not found: gem5" > "$_LOG"
+  python3 - "$_LOG" <<'PYEOF'
+import json, sys
+log_path = sys.argv[1]
+print(json.dumps({"tool":"gem5","exit_code":1,"status":"FAIL","summary":{},"errors":["tool not found: gem5"],"warnings":[],"raw_log":log_path}))
 PYEOF
   exit 1
 fi
@@ -24,7 +27,7 @@ import json, re, sys
 log_path = sys.argv[1]
 exit_code = int(sys.argv[2])
 
-with open(log_path) as f:
+with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b|panic|fatal', l, re.I)]
@@ -41,7 +44,7 @@ if ipc_m:       summary["ipc"]          = float(ipc_m.group(1))
 summary["error_count"]   = len(errors)
 summary["warning_count"] = len(warnings)
 
-status = "PASS" if exit_code == 0 and not errors else ("WARN" if exit_code == 0 else "FAIL")
+status = "FAIL" if exit_code != 0 or errors else ("WARN" if warnings else "PASS")
 
 print(json.dumps({
     "tool":      "gem5",

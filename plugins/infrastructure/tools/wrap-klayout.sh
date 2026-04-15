@@ -13,28 +13,31 @@ PYEOF
 fi
 
 LOG=$(mktemp /tmp/klayout-XXXXXX.log)
+START_EPOCH=$(python3 -c "import time; print(time.time())")
 set +e
 "$TOOL" "$@" >"$LOG" 2>&1
 EXIT_CODE=$?
 set -e
 
-python3 - "$LOG" "$EXIT_CODE" <<'PYEOF'
+python3 - "$LOG" "$EXIT_CODE" "$START_EPOCH" <<'PYEOF'
 import json, re, sys, os, glob
 
-log_path = sys.argv[1]
-exit_code = int(sys.argv[2])
+log_path        = sys.argv[1]
+exit_code       = int(sys.argv[2])
+invocation_start = float(sys.argv[3]) if len(sys.argv) > 3 else 0.0
 
-with open(log_path) as f:
+with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b', l, re.I)]
-warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN\b',  l, re.I)]
+warnings = [l.strip() for l in text.splitlines() if re.search(r'\bWARN(?:ING)?\b', l, re.I)]
 
 # Parse KLayout DRC report XML (*.lyrdb or *.xml) if present
 drc_categories = {}
 total_drc = 0
 
-for report_file in glob.glob('*.lyrdb') + glob.glob('*drc*.xml'):
+for report_file in [f for f in glob.glob('*.lyrdb') + glob.glob('*drc*.xml')
+                    if os.path.getmtime(f) >= invocation_start]:
     try:
         import xml.etree.ElementTree as ET
         tree = ET.parse(report_file)
@@ -65,7 +68,7 @@ summary = {
 
 if exit_code != 0 or errors:
     status = "FAIL"
-elif total_drc > 0:
+elif total_drc > 0 or warnings:
     status = "WARN"
 else:
     status = "PASS"

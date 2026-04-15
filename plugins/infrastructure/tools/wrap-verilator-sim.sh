@@ -3,12 +3,21 @@
 # Usage: wrap-verilator-sim.sh <sim_binary> [args...]
 set -euo pipefail
 
-TOOL="verilator"
-
-if ! command -v "$TOOL" &>/dev/null; then
+if [[ $# -lt 1 ]]; then
   python3 - <<'PYEOF'
 import json
-print(json.dumps({"tool":"verilator-sim","exit_code":1,"status":"FAIL","summary":{},"errors":["tool not found: verilator"],"warnings":[],"raw_log":""}))
+print(json.dumps({"tool":"verilator-sim","exit_code":1,"status":"FAIL","summary":{},"errors":["no sim binary provided: usage: wrap-verilator-sim.sh <sim_binary> [args...]"],"warnings":[],"raw_log":""}))
+PYEOF
+  exit 1
+fi
+
+SIM_BIN="$1"
+
+if [[ ! -x "$SIM_BIN" ]]; then
+  python3 - "$SIM_BIN" <<'PYEOF'
+import json, sys
+sim_bin = sys.argv[1]
+print(json.dumps({"tool":"verilator-sim","exit_code":1,"status":"FAIL","summary":{},"errors":[f"sim binary not found or not executable: {sim_bin}"],"warnings":[],"raw_log":""}))
 PYEOF
   exit 1
 fi
@@ -25,7 +34,7 @@ import json, re, sys
 log_path = sys.argv[1]
 exit_code = int(sys.argv[2])
 
-with open(log_path) as f:
+with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b', l, re.I)]

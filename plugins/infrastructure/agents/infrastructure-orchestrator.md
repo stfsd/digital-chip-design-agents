@@ -36,7 +36,7 @@ tool_discovery → tool_installation → wrapper_deployment → mcp_configuratio
 - Cadence Innovus, Mentor QuestaSim, Synopsys PrimeTime, Synopsys Formality
 
 ## Loop-Back Rules
-- tool_discovery FAIL (python3 missing)                         → escalate immediately (python3 required for all wrappers)
+- tool_installation FAIL (python3 missing)                      → escalate immediately (python3 required for all wrappers)
 - environment_validation FAIL (critical tool missing)           → tool_installation    (max 2×)
 - wrapper_deployment FAIL (permission denied)                   → escalate with `sudo chmod +x plugins/infrastructure/tools/*.sh`
 

@@ -24,7 +24,7 @@ import json, re, sys
 log_path = sys.argv[1]
 exit_code = int(sys.argv[2])
 
-with open(log_path) as f:
+with open(log_path, encoding='utf-8', errors='replace') as f:
     text = f.read()
 
 errors   = [l.strip() for l in text.splitlines() if re.search(r'\bERROR\b', l, re.I)]
@@ -41,7 +41,7 @@ if area_m:
 summary["error_count"]   = len(errors)
 summary["warning_count"] = len(warnings)
 
-status = "PASS" if exit_code == 0 and not errors else ("WARN" if exit_code == 0 else "FAIL")
+status = "FAIL" if exit_code != 0 or errors else ("WARN" if warnings else "PASS")
 
 print(json.dumps({
     "tool":      "yosys",
