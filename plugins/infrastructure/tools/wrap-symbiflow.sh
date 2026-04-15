@@ -7,7 +7,7 @@ TOOL="sby"
 if ! command -v "$TOOL" &>/dev/null; then
   python3 - <<'PYEOF'
 import json
-print(json.dumps({"tool":"symbiyosys","exit_code":1,"status":"FAIL","summary":{},"errors":["tool not found: sby (SymbiYosys)"],"warnings":[],"raw_log":""}))
+print(json.dumps({"tool":"symbiflow","exit_code":1,"status":"FAIL","summary":{},"errors":["tool not found: sby (SymbiYosys)"],"warnings":[],"raw_log":""}))
 PYEOF
   exit 1
 fi
@@ -58,7 +58,7 @@ else:
     status = "PASS"
 
 print(json.dumps({
-    "tool":      "symbiyosys",
+    "tool":      "symbiflow",
     "exit_code": exit_code,
     "status":    status,
     "summary":   summary,

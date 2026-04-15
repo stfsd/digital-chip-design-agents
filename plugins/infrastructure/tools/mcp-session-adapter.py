@@ -19,7 +19,7 @@ Environment (openroad):
 Environment (opensta):
     OPENSTA_EXE         sta executable name or path (default: sta)
     LIBERTY_PATH        default directory for .lib files
-    SPEF_PATH           default directory for .spef files
+    SPEF_PATH           full path to the .spef parasitics file (not a directory); passed directly to read_parasitics
 
 Environment (both):
     SESSION_TIMEOUT_S   per-command timeout in seconds (default: 120)
@@ -32,9 +32,28 @@ import subprocess
 import argparse
 import os
 import re
+import select
 import time
 import threading
 from typing import Optional
+
+
+def _readline_timed(stream, deadline: float) -> str:
+    """
+    Read one line from stream, returning '' if the deadline passes before
+    a line arrives.  Uses select(2) so the calling thread is not blocked
+    beyond the remaining time budget.
+
+    Note: select on file objects is POSIX-only (Linux/macOS).  These wrapper
+    scripts target Linux EDA environments; Windows is not supported.
+    """
+    remaining = deadline - time.time()
+    if remaining <= 0:
+        return ''
+    ready, _, _ = select.select([stream], [], [], remaining)
+    if not ready:
+        return ''
+    return stream.readline()
 
 # ---------------------------------------------------------------------------
 # Protocol helpers
@@ -90,13 +109,13 @@ class TclSession:
     def _drain_startup(self, timeout: int) -> None:
         """
         Discard any startup banner by sending the sentinel immediately
-        and collecting until it echoes back.
+        and collecting until it echoes back.  Respects timeout via select.
         """
         self._proc.stdin.write(f'puts "{_SENTINEL}"\n')
         self._proc.stdin.flush()
         deadline = time.time() + timeout
-        while time.time() < deadline:
-            line = self._proc.stdout.readline()
+        while True:
+            line = _readline_timed(self._proc.stdout, deadline)
             if not line or line.rstrip('\n') == _SENTINEL:
                 break
 
@@ -122,13 +141,22 @@ class TclSession:
             had_error = False
             deadline = time.time() + timeout
 
-            while time.time() < deadline:
-                # Non-blocking read with a short poll
-                line = self._proc.stdout.readline()
-                if not line:
-                    self._alive = False
-                    had_error = True
-                    lines.append("session process exited unexpectedly")
+            while True:
+                line = _readline_timed(self._proc.stdout, deadline)
+                if line == '':
+                    # '' means either deadline passed (select timeout) or EOF
+                    if self._proc.poll() is not None:
+                        self._alive = False
+                        had_error = True
+                        lines.append("session process exited unexpectedly")
+                    else:
+                        had_error = True
+                        lines.append(f"command timed out after {timeout}s")
+                        try:
+                            self._proc.kill()
+                        except OSError:
+                            pass
+                        self._alive = False
                     break
                 stripped = line.rstrip('\n')
                 if stripped == _SENTINEL:
@@ -176,15 +204,15 @@ def _parse_timing(lines: list[str]) -> dict:
     if wns_m:
         result["setup_wns_ns"] = float(wns_m.group(1))
     if tns_m:
-        result["setup_tns_ps"] = float(tns_m.group(1))
+        result["setup_tns_ns"] = float(tns_m.group(1))
 
     # Hold metrics
     hold_wns_m = re.search(r'hold\s+wns\s+([-\d.]+)', text, re.I)
     hold_tns_m = re.search(r'hold\s+tns\s+([-\d.]+)', text, re.I)
     if hold_wns_m:
-        result["hold_wns_ps"] = float(hold_wns_m.group(1))
+        result["hold_wns_ns"] = float(hold_wns_m.group(1))
     if hold_tns_m:
-        result["hold_tns_ps"] = float(hold_tns_m.group(1))
+        result["hold_tns_ns"] = float(hold_tns_m.group(1))
 
     # Worst path endpoint names
     endpoints = re.findall(r'Endpoint\s*:\s*(\S+)', text)

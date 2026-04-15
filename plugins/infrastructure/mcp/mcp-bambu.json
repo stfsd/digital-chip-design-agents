@@ -12,7 +12,7 @@
       ],
       "env": {
         "BAMBU_HOME": "/path/to/bambu",
-        "HLS_TARGET_DEVICE": "xc7a200t-1fbg676",
+        "HLS_TARGET_DEVICE": "<set_to_target_device_part_number>",
         "TOOL_TIMEOUT_S": "600"
       }
     }

@@ -11,9 +11,9 @@
         "--description", "Run Yosys synthesis and return compact JSON: cells, chip_area_um2, error/warning counts"
       ],
       "env": {
-        "YOSYS_DATDIR": "/usr/share/yosys",
         "TOOL_TIMEOUT_S": "300"
       }
+
     }
   }
 }

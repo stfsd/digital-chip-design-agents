@@ -22,6 +22,21 @@ import subprocess
 import argparse
 import os
 import tempfile
+import atexit
+
+# Temp files created for inline Tcl scripts — cleaned up on exit
+_temp_files: list[str] = []
+
+
+def _cleanup_temp_files() -> None:
+    for path in _temp_files:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+
+
+atexit.register(_cleanup_temp_files)
 
 # ---------------------------------------------------------------------------
 # MCP protocol helpers
@@ -99,7 +114,7 @@ _EXTRA_PROPERTIES: dict[str, dict] = {
             "description": "Workload binary to simulate (appended after config_script)"
         },
     },
-    "symbiyosys": {
+    "symbiflow": {
         "sby_file": {
             "type": "string",
             "description": "Path to the SymbiYosys .sby configuration file"
@@ -146,6 +161,7 @@ def _build_cli_args(tool: str, inputs: dict) -> list[str]:
             tf.write(inputs["tcl_script"])
             tf.flush()
             tf.close()
+            _temp_files.append(tf.name)
             print(f"[mcp-adapter] wrote Tcl script to {tf.name}", file=sys.stderr)
             return [tf.name] + raw
 
@@ -276,7 +292,15 @@ def main() -> None:
     parser.add_argument("--version", default="1.0.0")
     args = parser.parse_args()
 
-    timeout = int(os.environ.get("TOOL_TIMEOUT_S", "300"))
+    _timeout_raw = os.environ.get("TOOL_TIMEOUT_S", "300")
+    try:
+        timeout = int(_timeout_raw)
+    except ValueError:
+        print(
+            f"[mcp-adapter] WARNING: invalid TOOL_TIMEOUT_S={_timeout_raw!r}, using default 300s",
+            file=sys.stderr,
+        )
+        timeout = 300
     tool_name = args.tool
     wrapper_path = args.wrapper
     description = args.description or (
@@ -302,7 +326,8 @@ def main() -> None:
 
         method: str = req.get("method", "")
         req_id = req.get("id")  # None for notifications
-        params: dict = req.get("params") or {}
+        _raw_params = req.get("params")
+        params: dict = _raw_params if isinstance(_raw_params, dict) else {}
 
         # Notifications have no id — no response required
         if req_id is None:
@@ -331,8 +356,15 @@ def main() -> None:
             }))
 
         elif method == "tools/call":
+            if not isinstance(params, dict):
+                _send(_err(req_id, -32602, "Invalid params: expected object"))
+                continue
             call_name: str = params.get("name", "")
-            call_inputs: dict = params.get("arguments") or {}
+            _raw_args = params.get("arguments")
+            call_inputs: dict = _raw_args if isinstance(_raw_args, dict) else {}
+            if _raw_args is not None and not isinstance(_raw_args, dict):
+                _send(_err(req_id, -32602, "Invalid params: 'arguments' must be an object"))
+                continue
 
             if call_name != tool_name:
                 _send(_err(req_id, -32602, f"Unknown tool '{call_name}'; this server exposes '{tool_name}'"))
