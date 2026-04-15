@@ -1,10 +1,20 @@
 {
-  "_comment": "OpenROAD MCP server — paste the mcpServers block into your .claude/settings.json",
+  "_comment": "OpenROAD batch MCP server — for single-stage invocations. For ECO iteration queries on a loaded design use mcp-openroad-session.json instead. Replace /absolute/path/to with the actual repo root path.",
   "mcpServers": {
     "openroad": {
       "type": "stdio",
-      "command": "/absolute/path/to/plugins/infrastructure/tools/wrap-openroad.sh",
-      "args": []
+      "command": "python3",
+      "args": [
+        "/absolute/path/to/plugins/infrastructure/tools/mcp-adapter.py",
+        "--wrapper", "/absolute/path/to/plugins/infrastructure/tools/wrap-openroad.sh",
+        "--tool", "openroad",
+        "--description", "Run a single OpenROAD stage and return compact JSON: wns_ns, tns_ns, drc_violations, last 5 progress messages"
+      ],
+      "env": {
+        "PDK_ROOT": "/path/to/pdks",
+        "PLATFORM": "sky130hd",
+        "TOOL_TIMEOUT_S": "600"
+      }
     }
   }
 }
