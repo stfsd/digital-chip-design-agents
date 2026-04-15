@@ -5,7 +5,7 @@
     "github": "chuanseng-ng"
   },
   "metadata": {
-    "description": "Full digital chip design pipeline — 13 domains from architecture through tape-out and firmware.",
+    "description": "Full digital chip design pipeline — 14 domains from infrastructure setup through tape-out and firmware.",
     "version": "1.2.0"
   },
   "plugins": [
@@ -112,6 +112,14 @@
       "strict": true,
       "skills": ["./skills/fpga-emulation"],
       "agents": ["./agents/fpga-orchestrator.md"]
+    },
+    {
+      "name": "chip-design-infrastructure",
+      "description": "EDA tool detection, output-filtering shell wrappers, and MCP server config templates for all chip-design domain agents",
+      "source": "./plugins/infrastructure",
+      "strict": true,
+      "skills": ["./skills/infrastructure"],
+      "agents": ["./agents/infrastructure-orchestrator.md"]
     }
   ]
 }

@@ -1,0 +1,10 @@
+{
+  "_comment": "OpenROAD MCP server — paste the mcpServers block into your .claude/settings.json",
+  "mcpServers": {
+    "openroad": {
+      "type": "stdio",
+      "command": "/absolute/path/to/plugins/infrastructure/tools/wrap-openroad.sh",
+      "args": []
+    }
+  }
+}

@@ -128,8 +128,8 @@ jobs:
           mp = json.load(open(".claude-plugin/marketplace.json"))
           mp_count = len(mp.get("plugins", []))
           print(f"Skills: {skill_count} | Agents: {agent_count} | Marketplace entries: {mp_count}")
-          assert skill_count == agent_count == mp_count == 13, \
-              f"Count mismatch — expected 13 each: skills={skill_count}, agents={agent_count}, marketplace={mp_count}"
+          assert skill_count == agent_count == mp_count == 14, \
+              f"Count mismatch — expected 14 each: skills={skill_count}, agents={agent_count}, marketplace={mp_count}"
           print("Count check PASSED")
           PYEOF
 
@@ -140,14 +140,14 @@ jobs:
 
           errors = []
 
-          # applyto-map.json must have all 13 domains
+          # applyto-map.json must have all 14 domains
           applyto_path = "ides/copilot/applyto-map.json"
           if not os.path.isfile(applyto_path):
               errors.append(f"Missing: {applyto_path}")
           else:
               applyto = json.load(open(applyto_path))
-              if len(applyto) != 13:
-                  errors.append(f"{applyto_path}: expected 13 domains, got {len(applyto)}")
+              if len(applyto) != 14:
+                  errors.append(f"{applyto_path}: expected 14 domains, got {len(applyto)}")
               else:
                   print(f"OK: {applyto_path} — {len(applyto)} domains")
 

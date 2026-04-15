@@ -71,6 +71,7 @@ PLUGINS=(
   "chip-design-compiler"
   "chip-design-firmware"
   "chip-design-fpga"
+  "chip-design-infrastructure"
 )
 
 # ── Plugin → source directory mapping ────────────────────────────────────────
@@ -88,6 +89,7 @@ declare -A PLUGIN_DIRS=(
   ["chip-design-compiler"]="compiler"
   ["chip-design-firmware"]="firmware"
   ["chip-design-fpga"]="fpga"
+  ["chip-design-infrastructure"]="infrastructure"
 )
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -146,7 +148,7 @@ plugins = [
   "chip-design-formal",       "chip-design-synthesis", "chip-design-dft",
   "chip-design-sta",          "chip-design-hls",       "chip-design-pd",
   "chip-design-soc",          "chip-design-compiler",  "chip-design-firmware",
-  "chip-design-fpga",
+  "chip-design-fpga",         "chip-design-infrastructure",
 ]
 
 cfg = {}
@@ -171,7 +173,7 @@ print(f"  [OK] {len(plugins)} plugins enabled in settings.json")
 PYEOF
 
   echo ""
-  echo "Done! Restart Claude Code to activate all 13 plugins."
+  echo "Done! Restart Claude Code to activate all 14 plugins."
 
 fi  # end Claude Code block
 
