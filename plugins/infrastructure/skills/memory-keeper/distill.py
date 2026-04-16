@@ -69,10 +69,16 @@ def load_records(jsonl_path: Path) -> list[dict]:
             if not raw:
                 continue
             try:
-                records.append(json.loads(raw))
+                obj = json.loads(raw)
             except json.JSONDecodeError:
                 malformed += 1
                 print(f"  [warn] malformed JSON on line {lineno}, skipping", file=sys.stderr)
+                continue
+            if not isinstance(obj, dict):
+                malformed += 1
+                print(f"  [warn] line {lineno} is valid JSON but not an object, skipping", file=sys.stderr)
+                continue
+            records.append(obj)
     if malformed:
         print(f"  [warn] {malformed} malformed line(s) ignored", file=sys.stderr)
     return records
@@ -132,7 +138,9 @@ def extract_tool_flag_candidates(records: list[dict]) -> list[str]:
     lines containing ' -', ' --', or backtick-quoted text.
     """
     import re
-    flag_pattern = re.compile(r"(`[^`]+`| --?\w[\w\-]*)")
+    # Match backtick-quoted tokens OR flags preceded by whitespace, start-of-string,
+    # or start-of-line (re.MULTILINE makes ^ match after each newline).
+    flag_pattern = re.compile(r"(`[^`]+`|(?:(?:^|\s))(--?\w[\w\-]*))", re.MULTILINE)
     seen = set()
     candidates = []
     for rec in records:

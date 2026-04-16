@@ -1,7 +1,7 @@
 # digital-chip-design-agents
 
 > Claude Code marketplace plugin — full digital chip design pipeline.  
-> 13 domains · 13 orchestrators · 14 skill files · architecture through firmware.
+> 13 domains · 14 orchestrators · 15 skill files · architecture through firmware.
 
 [![Validate](https://github.com/chuanseng-ng/digital-chip-design-agents/actions/workflows/validate.yml/badge.svg)](https://github.com/chuanseng-ng/digital-chip-design-agents/actions/workflows/validate.yml)
 
@@ -11,7 +11,7 @@
 
 ### Option A — Install script (recommended)
 
-Clone the repo and run one script — all 13 plugins are installed and enabled in a
+Clone the repo and run one script — all 14 plugins are installed and enabled in a
 single step, no repeated commands needed.
 
 **macOS / Linux / Git Bash:**
@@ -28,7 +28,7 @@ cd digital-chip-design-agents
 .\install.ps1
 ```
 
-Restart Claude Code after running — all 14 skills and agents will be active.
+Restart Claude Code after running — all 15 skills and 14 agents will be active.
 
 ### Option B — Marketplace (selective install)
 
@@ -303,7 +303,7 @@ be present. The canonical values are:
 "license":    "MIT"
 ```
 
-When updating these fields, change all 13 `plugin.json` files and
+When updating these fields, change all 14 `plugin.json` files and
 `.claude-plugin/marketplace.json` together.
 
 ---

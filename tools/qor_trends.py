@@ -76,13 +76,17 @@ NUMERIC_METRICS: dict[str, list[str]] = {
     "verification": ["functional_coverage_pct", "regression_failures", "assertions_triggered"],
 }
 
-# Metrics where higher is better (used for regression detection)
+# Metrics where higher is better (used for regression detection).
+# Timing-slack metrics (wns_ns, tns_ns, etc.) are negative when violating and
+# approach 0 as they improve, so higher (less negative) is better.
 HIGHER_IS_BETTER = {
     "estimated_mhz", "fmax_mhz", "isa_tests_passed", "regression_pass_rate",
     "scan_coverage_pct", "atpg_fault_coverage_pct", "bsp_tests_passed",
     "proved", "ip_blocks_integrated", "functional_coverage_pct",
     "ii_achieved", "timing_met", "abi_compliant", "simulation_pass",
     "synth_check_pass", "build_pass",
+    # Timing slack: 0 = clean, negative = violation; closer to 0 is better
+    "wns_ns", "setup_wns_ns", "hold_wns_ns", "tns_ns",
 }
 
 
@@ -110,9 +114,14 @@ def load_domain_records(memory_root: Path, domain: str) -> list[dict]:
             if not raw:
                 continue
             try:
-                records.append(json.loads(raw))
+                obj = json.loads(raw)
             except json.JSONDecodeError:
                 print(f"  [warn] {domain}: malformed JSON on line {lineno}, skipping", file=sys.stderr)
+                continue
+            if not isinstance(obj, dict):
+                print(f"  [warn] {domain}: line {lineno} is valid JSON but not an object, skipping", file=sys.stderr)
+                continue
+            records.append(obj)
     return records
 
 

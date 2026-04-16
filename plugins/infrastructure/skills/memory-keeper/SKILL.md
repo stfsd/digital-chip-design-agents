@@ -14,7 +14,7 @@ allowed-tools: Read, Write, Bash
 
 ## Invocation
 
-```
+```text
 /chip-design-infrastructure:memory-keeper [--domain <name>] [--all] [--min-records <n>]
 ```
 
@@ -82,18 +82,18 @@ Valid domain names match the subdirectories under `memory/`:
 ### Output
 
 Structured summary object (in-memory) passed to `distil_knowledge`:
-```
+```json
 {
   "domain": "<domain>",
-  "record_count": <n>,
+  "record_count": "<n>",
   "date_range": ["<oldest ISO-8601>", "<newest ISO-8601>"],
-  "signoff_rate": <fraction>,
-  "issue_fix_pairs": [{"issue": "...", "fix": "...", "count": <n>}, ...],
-  "tool_flag_candidates": ["<flag or command fragment>", ...],
+  "signoff_rate": "<fraction>",
+  "issue_fix_pairs": [{"issue": "...", "fix": "...", "count": "<n>"}],
+  "tool_flag_candidates": ["<flag or command fragment>"],
   "metric_ranges": {
-    "<metric_field>": {"min": x, "max": y, "median": z, "latest": w}
+    "<metric_field>": {"min": "x", "max": "y", "median": "z", "latest": "w"}
   },
-  "free_notes": ["<note string>", ...]
+  "free_notes": ["<note string>"]
 }
 ```
 
@@ -152,7 +152,7 @@ Structured summary object (in-memory) passed to `distil_knowledge`:
 ### Domain Rules
 
 1. Print a per-domain distillation report:
-   ```
+   ```text
    Domain:        <domain>
    Records read:  <n>
    Date range:    <oldest> → <newest>
