@@ -57,3 +57,37 @@ When invoking open-source tools, follow the execution hierarchy:
 3. SW bugs: fix in firmware without re-synthesising unless HW root cause confirmed
 4. All performance measurements: record at prototype frequency with scale factor noted
 5. Output: prototype sign-off report + HW bug report for RTL team + performance baseline
+6. Read `memory/fpga/knowledge.md` before the first stage and write an experience record to `memory/fpga/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `rtl_adaptation`, read `memory/fpga/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/fpga/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "fpga",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "lut_count": "<value>",
+    "fmax_mhz": "<value>",
+    "timing_met": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

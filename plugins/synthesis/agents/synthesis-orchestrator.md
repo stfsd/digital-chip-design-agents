@@ -50,3 +50,38 @@ When invoking open-source tools, follow the execution hierarchy:
 1. Read logic-synthesis skill before each stage
 2. On completion: produce PD handoff package (netlist, SDC, timing/area/power reports)
 3. LEC must be run after every netlist change — not just at sign-off
+4. Read `memory/synthesis/knowledge.md` before the first stage and write an experience record to `memory/synthesis/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `constraint_setup`, read `memory/synthesis/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/synthesis/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "synthesis",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "wns_ns": "<value>",
+    "cells": "<value>",
+    "area_um2": "<value>",
+    "lec_unmatched": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

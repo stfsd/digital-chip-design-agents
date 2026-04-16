@@ -55,3 +55,37 @@ When invoking open-source tools, follow the execution hierarchy:
 2. Enforce SystemVerilog coding standards from skill at every rtl_coding stage
 3. Escalate clearly if max iterations exceeded — show state and root cause
 4. Output: RTL package (filelist.f, all .sv files, assertions, lint/CDC reports)
+5. Read `memory/rtl-design/knowledge.md` before the first stage and write an experience record to `memory/rtl-design/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `module_planning`, read `memory/rtl-design/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/rtl-design/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "rtl-design",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "lint_errors": "<value>",
+    "cdc_violations": "<value>",
+    "synth_check_pass": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.
