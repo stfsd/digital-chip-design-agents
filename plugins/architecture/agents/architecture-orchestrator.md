@@ -85,3 +85,37 @@ Each stage must return:
 2. Enforce loop-back rules strictly — do not proceed past a FAIL
 3. If max iterations exceeded: stop, present full state and escalation report
 4. On completion: produce microarchitecture document and RTL handoff package
+5. Read `memory/architecture/knowledge.md` before the first stage and write an experience record to `memory/architecture/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `spec_analysis`, read `memory/architecture/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/architecture/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "architecture",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "selected_arch": "<value>",
+    "estimated_mhz": "<value>",
+    "estimated_area_um2": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

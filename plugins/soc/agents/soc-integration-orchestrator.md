@@ -53,3 +53,37 @@ When invoking open-source tools, follow the execution hierarchy:
 2. Block progression if any IP has unresolved qualification issues
 3. Track ip_status{} per IP in state — never proceed with unqualified IP
 4. Output: integrated SoC RTL package ready for synthesis
+5. Read `memory/soc/knowledge.md` before the first stage and write an experience record to `memory/soc/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `ip_procurement`, read `memory/soc/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/soc/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "soc",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "ip_blocks_integrated": "<value>",
+    "simulation_pass": "<value>",
+    "memory_map_conflicts": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

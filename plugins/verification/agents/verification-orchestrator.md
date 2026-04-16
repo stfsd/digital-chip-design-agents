@@ -54,3 +54,37 @@ When invoking open-source tools, follow the execution hierarchy:
 2. Track all bugs in state bugs_found[] — do not discard between stages
 3. Do not proceed to regression_signoff if any P0/P1 bugs remain open
 4. Bug found during directed tests: suspend flow; present RTL fix required report
+5. Read `memory/verification/knowledge.md` before the first stage and write an experience record to `memory/verification/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `tb_architecture`, read `memory/verification/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/verification/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "verification",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "functional_coverage_pct": "<value>",
+    "regression_failures": "<value>",
+    "assertions_triggered": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

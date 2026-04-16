@@ -53,3 +53,37 @@ When invoking open-source tools, follow the execution hierarchy:
 2. CEX from RTL bug: suspend, report to RTL team, wait for fix confirmation before retry
 3. Flag any unproven P0 property as a hard blocker for sign-off
 4. Vacuity check required after every environment_setup iteration
+5. Read `memory/formal/knowledge.md` before the first stage and write an experience record to `memory/formal/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `property_planning`, read `memory/formal/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/formal/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "formal",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "proved": "<value>",
+    "failed": "<value>",
+    "unknown": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

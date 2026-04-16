@@ -65,3 +65,38 @@ placed/routed, prefer:
 2. Update global_qor after every stage — track WNS/TNS/power/area/DRC through flow
 3. Never proceed past a FAIL without applying the loop-back rule
 4. Output: GDS-II, sign-off STA report, DRC clean, LVS clean, power report
+5. Read `memory/pd/knowledge.md` before the first stage and write an experience record to `memory/pd/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `floorplan`, read `memory/pd/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/pd/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "pd",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "wns_ns": "<value>",
+    "drc_violations": "<value>",
+    "lvs_errors": "<value>",
+    "gds_area_um2": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

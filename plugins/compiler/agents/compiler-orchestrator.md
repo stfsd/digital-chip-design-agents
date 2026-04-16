@@ -46,3 +46,37 @@ isa_analysis → backend_dev → assembler_dev → linker_config → runtime_lib
 2. Miscompilation (wrong output) = P0 blocker — root cause required before retry
 3. Implement backend in order: registers → integer ISA → calling convention → FPU → custom instructions
 4. Output: toolchain release package + validation report + ABI spec
+5. Read `memory/compiler/knowledge.md` before the first stage and write an experience record to `memory/compiler/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `isa_analysis`, read `memory/compiler/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/compiler/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "compiler",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "isa_tests_passed": "<value>",
+    "abi_compliant": "<value>",
+    "regression_pass_rate": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.
