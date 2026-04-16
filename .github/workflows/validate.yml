@@ -128,8 +128,13 @@ jobs:
           mp = json.load(open(".claude-plugin/marketplace.json"))
           mp_count = len(mp.get("plugins", []))
           print(f"Skills: {skill_count} | Agents: {agent_count} | Marketplace entries: {mp_count}")
-          assert skill_count == agent_count == mp_count == 14, \
-              f"Count mismatch — expected 14 each: skills={skill_count}, agents={agent_count}, marketplace={mp_count}"
+          # Agents and marketplace entries must be 1:1 (one orchestrator per plugin).
+          # Skills may exceed plugins — a plugin can register more than one skill file
+          # (e.g. chip-design-infrastructure registers both 'infrastructure' and 'memory-keeper').
+          assert agent_count == mp_count == 14, \
+              f"Count mismatch — expected 14 agents and 14 marketplace entries: agents={agent_count}, marketplace={mp_count}"
+          assert skill_count >= mp_count, \
+              f"Fewer skills than plugins — each plugin must have at least one skill: skills={skill_count}, plugins={mp_count}"
           print("Count check PASSED")
           PYEOF
 
