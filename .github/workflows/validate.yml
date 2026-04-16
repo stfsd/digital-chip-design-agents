@@ -183,6 +183,15 @@ jobs:
               else:
                   print(f"OK: {ob_path} — model={base['model']}")
 
+          # ides/codex/AGENTS.md must exist and be non-empty
+          codex_path = "ides/codex/AGENTS.md"
+          if not os.path.isfile(codex_path):
+              errors.append(f"Missing: {codex_path}")
+          elif os.path.getsize(codex_path) == 0:
+              errors.append(f"{codex_path}: file is empty")
+          else:
+              print(f"OK: {codex_path}")
+
           if errors:
               for e in errors: print(f"ERROR: {e}", file=sys.stderr)
               sys.exit(1)
