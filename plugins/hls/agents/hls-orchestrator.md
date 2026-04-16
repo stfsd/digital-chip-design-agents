@@ -54,3 +54,37 @@ When invoking open-source tools, follow the execution hierarchy:
 2. Track hls_report metrics (latency, II, area) in state across iterations
 3. Co-simulation output mismatch is always a blocker — root cause before retry
 4. Output: HLS RTL package + co-sim report + interface documentation
+5. Read `memory/hls/knowledge.md` before the first stage and write an experience record to `memory/hls/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `algorithm_analysis`, read `memory/hls/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/hls/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "hls",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "latency_cycles": "<value>",
+    "dsp_count": "<value>",
+    "ii_achieved": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.

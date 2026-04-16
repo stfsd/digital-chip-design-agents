@@ -46,3 +46,37 @@ bsp_development → peripheral_drivers → rtos_integration → driver_validatio
 2. Do not proceed to rtos_integration until ALL drivers pass unit tests
 3. Track drivers_complete[] in state — partial driver list blocks RTOS stage
 4. Output: validated firmware package + bring-up guide + known issues list
+5. Read `memory/firmware/knowledge.md` before the first stage and write an experience record to `memory/firmware/experiences.jsonl` after signoff or escalation.
+
+## Memory
+
+### Read (session start)
+Before beginning `bsp_development`, read `memory/firmware/knowledge.md` if it exists.
+Incorporate its guidance into stage decisions — especially known failure patterns,
+successful tool flags, and PDK-specific notes. If the file does not exist, proceed
+without it.
+
+### Write (session end)
+After signoff (or on escalation/abandon), append one JSON line to
+`memory/firmware/experiences.jsonl`:
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "domain": "firmware",
+  "design_name": "<from state>",
+  "pdk": "<from state if known, else null>",
+  "tool_used": "<primary tool>",
+  "stages_completed": ["<stage>", "..."],
+  "loop_backs": {"<stage>": "<count>", "..."},
+  "key_metrics": {
+    "build_pass": "<value>",
+    "flash_size_kb": "<value>",
+    "bsp_tests_passed": "<value>"
+  },
+  "issues_encountered": ["<description>", "..."],
+  "fixes_applied": ["<description>", "..."],
+  "signoff_achieved": true,
+  "notes": "<free-text observations>"
+}
+```
+Create the file and parent directories if they do not exist.
