@@ -1,0 +1,182 @@
+---
+name: memory-keeper
+description: >
+  Distil accumulated experience records (experiences.jsonl) into updated domain knowledge
+  summaries (knowledge.md) for any chip-design domain. Run after every 10 orchestrator
+  sessions, or on demand when a domain has collected new issue/fix patterns.
+version: 1.0.0
+author: chuanseng-ng
+license: MIT
+allowed-tools: Read, Write, Bash
+---
+
+# Skill: Memory Keeper
+
+## Invocation
+
+```
+/chip-design-infrastructure:memory-keeper [--domain <name>] [--all] [--min-records <n>]
+```
+
+- `--domain <name>` — distil a single domain (e.g. `synthesis`, `sta`, `pd`)
+- `--all` — distil every domain that has an `experiences.jsonl` with enough records
+- `--min-records <n>` — minimum record count to proceed (default: 5); skip domains below threshold
+
+If neither `--domain` nor `--all` is given, prompt the user to choose.
+
+---
+
+## Purpose
+
+Orchestrators write one JSON record to `memory/<domain>/experiences.jsonl` after every run.
+Over time those records accumulate issue descriptions, applied fixes, metric ranges, and
+tool-flag observations. This skill reads that evidence and merges the new learnings into
+`memory/<domain>/knowledge.md` — the Tier-2 summary that every orchestrator reads at session
+start. Without periodic distillation, knowledge.md drifts stale while the evidence log grows.
+
+---
+
+## Domains
+
+Valid domain names match the subdirectories under `memory/`:
+
+| Domain | JSONL path |
+|--------|-----------|
+| `architecture` | `memory/architecture/experiences.jsonl` |
+| `compiler` | `memory/compiler/experiences.jsonl` |
+| `dft` | `memory/dft/experiences.jsonl` |
+| `firmware` | `memory/firmware/experiences.jsonl` |
+| `formal` | `memory/formal/experiences.jsonl` |
+| `fpga` | `memory/fpga/experiences.jsonl` |
+| `hls` | `memory/hls/experiences.jsonl` |
+| `pd` | `memory/pd/experiences.jsonl` |
+| `rtl-design` | `memory/rtl-design/experiences.jsonl` |
+| `soc` | `memory/soc/experiences.jsonl` |
+| `sta` | `memory/sta/experiences.jsonl` |
+| `synthesis` | `memory/synthesis/experiences.jsonl` |
+| `verification` | `memory/verification/experiences.jsonl` |
+
+---
+
+## Stage: load_experiences
+
+### Rules
+
+1. Read `memory/<domain>/experiences.jsonl` (one JSON object per line).
+2. Count valid records. If count < `--min-records` (default 5), print a skip notice and
+   stop — not enough signal to distil.
+3. If the file does not exist or is empty, skip with the same notice.
+4. Parse every record into an in-memory list. Ignore malformed lines (log a warning).
+5. Group records along three axes for the analysis stage:
+   - **Issues + fixes**: collect all `issues_encountered` and `fixes_applied` strings
+   - **Tool flags**: scan `notes` and `fixes_applied` for explicit flag/command patterns
+     (lines containing `-`, `--`, or backtick-quoted commands)
+   - **Metric ranges**: for each numeric field in `key_metrics`, collect the list of values
+     across all records; compute min, max, median, and the most recent value
+
+### Output
+
+Structured summary object (in-memory) passed to `distil_knowledge`:
+```
+{
+  "domain": "<domain>",
+  "record_count": <n>,
+  "date_range": ["<oldest ISO-8601>", "<newest ISO-8601>"],
+  "signoff_rate": <fraction>,
+  "issue_fix_pairs": [{"issue": "...", "fix": "...", "count": <n>}, ...],
+  "tool_flag_candidates": ["<flag or command fragment>", ...],
+  "metric_ranges": {
+    "<metric_field>": {"min": x, "max": y, "median": z, "latest": w}
+  },
+  "free_notes": ["<note string>", ...]
+}
+```
+
+---
+
+## Stage: distil_knowledge
+
+### Rules
+
+1. Read the **existing** `memory/<domain>/knowledge.md` in full.
+2. Using the structured summary from `load_experiences`, identify new evidence that is
+   **not already captured** in the current knowledge.md:
+   - New issue/fix pairs not yet present under **Known Failure Patterns**
+   - New successful flags not yet under **Successful Tool Flags**
+   - PDK or tool quirks mentioned in notes not yet under **PDK / Tool Quirks**
+3. For each new finding, draft a concise bullet following the style of existing entries:
+   - Lead with the symptom or scenario in **bold**
+   - Follow with the cause and the fix in plain prose
+   - Keep each entry to 2–4 sentences maximum
+4. Merge new entries **below** existing entries in the relevant section — never delete or
+   overwrite an existing entry unless it directly contradicts new evidence (note the
+   contradiction explicitly).
+5. If the signoff rate across records is < 50%, add a note in the **Notes** section
+   flagging common failure modes that did not reach signoff.
+6. Update the `## Notes` section with a distillation timestamp:
+   `_Last distilled: <ISO-8601 date> from <n> experience records._`
+   Replace any previous such line.
+7. Write the updated content back to `memory/<domain>/knowledge.md`.
+
+### Merge Policy
+
+| Scenario | Action |
+|----------|--------|
+| New issue/fix not in knowledge.md | Add under Known Failure Patterns |
+| Existing entry confirmed by ≥ 3 records | Add `(confirmed across N runs)` annotation |
+| Existing entry contradicted by ≥ 3 records | Strike through old text, add corrected entry |
+| New tool flag observed in ≥ 2 records | Add under Successful Tool Flags |
+| Single-record observation | Add only if `signoff_achieved: true` and notes are detailed |
+
+### Output Required
+
+- Updated `memory/<domain>/knowledge.md`
+- Console summary: how many new entries were added per section, and how many existing
+  entries were annotated or corrected
+
+---
+
+## Stage: report
+
+### Rules
+
+1. Print a per-domain distillation report:
+   ```
+   Domain:        <domain>
+   Records read:  <n>
+   Date range:    <oldest> → <newest>
+   Signoff rate:  <pct>%
+   New entries:   +<k> Known Failure Patterns, +<j> Successful Tool Flags, +<i> PDK Quirks
+   Annotations:   <m> existing entries updated
+   knowledge.md:  memory/<domain>/knowledge.md  [updated]
+   ```
+2. If `--all` was used, print a summary table across all processed domains.
+3. If any domain was skipped (too few records), list them with their current record count.
+
+---
+
+## Sign-off Checklist
+
+- [ ] `experiences.jsonl` read; record count ≥ min-records threshold
+- [ ] Structured summary produced (issue/fix pairs, metric ranges, tool flags)
+- [ ] Existing `knowledge.md` read without modification during analysis
+- [ ] New entries drafted in the style of existing entries
+- [ ] Contradicted entries flagged, not silently overwritten
+- [ ] Distillation timestamp updated in Notes section
+- [ ] `knowledge.md` written back to disk
+- [ ] Console report printed
+
+---
+
+## Example Invocations
+
+```bash
+# Distil synthesis domain (must have ≥ 5 records)
+/chip-design-infrastructure:memory-keeper --domain synthesis
+
+# Distil all domains with ≥ 10 records
+/chip-design-infrastructure:memory-keeper --all --min-records 10
+
+# Force distillation even with 3 records (debugging or early feedback)
+/chip-design-infrastructure:memory-keeper --domain sta --min-records 3
+```
