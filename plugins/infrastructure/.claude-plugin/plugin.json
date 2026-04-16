@@ -6,6 +6,6 @@
   "homepage": "https://github.com/chuanseng-ng/digital-chip-design-agents",
   "repository": "https://github.com/chuanseng-ng/digital-chip-design-agents",
   "license": "MIT",
-  "skills": ["./skills/infrastructure"],
+  "skills": ["./skills/infrastructure", "./skills/memory-keeper"],
   "agents": ["./agents/infrastructure-orchestrator.md"]
 }

@@ -115,10 +115,10 @@
     },
     {
       "name": "chip-design-infrastructure",
-      "description": "EDA tool detection, output-filtering shell wrappers, and MCP server config templates for all chip-design domain agents",
+      "description": "EDA tool detection, output-filtering shell wrappers, MCP server config templates, and memory distillation for all chip-design domain agents",
       "source": "./plugins/infrastructure",
       "strict": true,
-      "skills": ["./skills/infrastructure"],
+      "skills": ["./skills/infrastructure", "./skills/memory-keeper"],
       "agents": ["./agents/infrastructure-orchestrator.md"]
     }
   ]

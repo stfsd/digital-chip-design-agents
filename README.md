@@ -1,7 +1,7 @@
 # digital-chip-design-agents
 
 > Claude Code marketplace plugin — full digital chip design pipeline.  
-> 13 domains · 13 orchestrators · 13 skill files · architecture through firmware.
+> 13 domains · 14 orchestrators · 15 skill files · architecture through firmware.
 
 [![Validate](https://github.com/chuanseng-ng/digital-chip-design-agents/actions/workflows/validate.yml/badge.svg)](https://github.com/chuanseng-ng/digital-chip-design-agents/actions/workflows/validate.yml)
 
@@ -11,7 +11,7 @@
 
 ### Option A — Install script (recommended)
 
-Clone the repo and run one script — all 13 plugins are installed and enabled in a
+Clone the repo and run one script — all 14 plugins are installed and enabled in a
 single step, no repeated commands needed.
 
 **macOS / Linux / Git Bash:**
@@ -28,7 +28,7 @@ cd digital-chip-design-agents
 .\install.ps1
 ```
 
-Restart Claude Code after running — all 13 skills and agents will be active.
+Restart Claude Code after running — all 15 skills and 14 agents will be active.
 
 ### Option B — Marketplace (selective install)
 
@@ -116,6 +116,7 @@ Claude automatically loads the correct skill before executing.
 | `chip-design-compiler` | Compiler Toolchain | Build LLVM/GCC backend, assembler, linker, runtime for custom ISA |
 | `chip-design-firmware` | Embedded Firmware | BSP, HAL drivers, RTOS integration, firmware validation |
 | `chip-design-fpga` | FPGA Emulation | Port ASIC to FPGA, bring up hardware, validate SW on prototype |
+| `chip-design-infrastructure` | Infrastructure & Memory | Detect EDA tools, deploy wrappers, configure MCP servers, distil domain memory |
 
 ---
 
@@ -159,7 +160,7 @@ All 13 domain orchestrators follow the same pattern with domain-specific stages 
 digital-chip-design-agents/
 │
 ├── .claude-plugin/
-│   └── marketplace.json         ← Marketplace registry (all 13 plugins)
+│   └── marketplace.json         ← Marketplace registry (all 14 plugins)
 │
 ├── plugins/                     ← One isolated directory per plugin
 │   ├── architecture/
@@ -174,7 +175,15 @@ digital-chip-design-agents/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── agents/rtl-design-orchestrator.md
 │   │   └── skills/rtl-design/SKILL.md
-│   └── ... (13 total, same layout each)
+│   ├── ... (13 domain plugins, same layout each)
+│   └── infrastructure/
+│       ├── .claude-plugin/plugin.json
+│       ├── agents/infrastructure-orchestrator.md
+│       ├── skills/infrastructure/SKILL.md
+│       ├── skills/memory-keeper/   ← distils experiences.jsonl → knowledge.md
+│       │   ├── SKILL.md
+│       │   └── distill.py
+│       └── tools/                  ← EDA wrapper scripts and MCP adapters
 │
 ├── ides/                        ← IDE-specific config files (non-Claude)
 │   ├── copilot/
@@ -185,6 +194,13 @@ digital-chip-design-agents/
 │   │   └── gemini-header.md     ← preamble injected into generated GEMINI.md
 │   └── opencode/
 │       └── opencode-base.json   ← base OpenCode config template
+│
+├── memory/                      ← Persistent two-tier memory (per domain)
+│   ├── <domain>/knowledge.md   ← Tier 2: distilled summaries (read at session start)
+│   └── <domain>/experiences.jsonl ← Tier 1: append-only run records
+│
+├── tools/
+│   └── qor_trends.py           ← QoR metric trending and regression detection
 │
 └── .github/
     └── workflows/
@@ -227,6 +243,43 @@ The 13 domains map to a complete chip design pipeline:
 
 ---
 
+## Memory System
+
+Each domain orchestrator reads from and writes to a two-tier persistent memory store under `memory/`:
+
+- **`memory/<domain>/knowledge.md`** — distilled summaries: known failure patterns, successful tool flags, PDK quirks. Read by every orchestrator at session start.
+- **`memory/<domain>/experiences.jsonl`** — append-only run records written after every signoff or escalation.
+
+### Distilling new knowledge
+
+After enough runs accumulate (default threshold: 5 records), merge new learnings back into `knowledge.md`:
+
+```text
+/chip-design-infrastructure:memory-keeper --domain synthesis
+/chip-design-infrastructure:memory-keeper --all --min-records 10
+```
+
+The `memory-keeper` skill reads the JSONL records, identifies new issue/fix patterns and tool flags not already captured, and updates the relevant sections of `knowledge.md` without discarding still-valid content.
+
+### QoR trend analysis
+
+Track how key metrics evolve across runs for a named design:
+
+```bash
+# Text table for all domains where design "aes_core" appears
+python3 tools/qor_trends.py --design aes_core
+
+# WNS trend for synthesis only, with regression alerts
+python3 tools/qor_trends.py --design aes_core --domain synthesis --metric wns_ns
+
+# Save a matplotlib chart
+python3 tools/qor_trends.py --design aes_core --plot --output aes_core_qor.png
+```
+
+Regression alerts fire automatically when a metric moves in the wrong direction between runs (e.g. WNS degrades, coverage drops).
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome for:
@@ -250,7 +303,7 @@ be present. The canonical values are:
 "license":    "MIT"
 ```
 
-When updating these fields, change all 13 `plugin.json` files and
+When updating these fields, change all 14 `plugin.json` files and
 `.claude-plugin/marketplace.json` together.
 
 ---
