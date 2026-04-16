@@ -60,7 +60,7 @@ Valid domain names match the subdirectories under `memory/`:
 
 ## Stage: load_experiences
 
-### Rules
+### Domain Rules
 
 1. Read `memory/<domain>/experiences.jsonl` (one JSON object per line).
 2. Count valid records. If count < `--min-records` (default 5), print a skip notice and
@@ -73,6 +73,11 @@ Valid domain names match the subdirectories under `memory/`:
      (lines containing `-`, `--`, or backtick-quoted commands)
    - **Metric ranges**: for each numeric field in `key_metrics`, collect the list of values
      across all records; compute min, max, median, and the most recent value
+
+### QoR Metrics to Evaluate
+- `records_read`: total valid JSONL records parsed (target ≥ min-records threshold)
+- `records_skipped`: malformed lines ignored (target: 0)
+- `signoff_rate`: fraction of records where `signoff_achieved: true` (informational)
 
 ### Output
 
@@ -96,7 +101,7 @@ Structured summary object (in-memory) passed to `distil_knowledge`:
 
 ## Stage: distil_knowledge
 
-### Rules
+### Domain Rules
 
 1. Read the **existing** `memory/<domain>/knowledge.md` in full.
 2. Using the structured summary from `load_experiences`, identify new evidence that is
@@ -128,6 +133,12 @@ Structured summary object (in-memory) passed to `distil_knowledge`:
 | New tool flag observed in ≥ 2 records | Add under Successful Tool Flags |
 | Single-record observation | Add only if `signoff_achieved: true` and notes are detailed |
 
+### QoR Metrics to Evaluate
+- `new_failure_patterns`: new entries added under Known Failure Patterns (target ≥ 1 if new issues exist)
+- `new_tool_flags`: new entries added under Successful Tool Flags (target ≥ 1 if new flags observed)
+- `existing_entries_annotated`: count of existing entries updated with confirmation or correction notes
+- `contradictions_flagged`: entries where new evidence contradicts old — must never be silently overwritten
+
 ### Output Required
 
 - Updated `memory/<domain>/knowledge.md`
@@ -138,7 +149,7 @@ Structured summary object (in-memory) passed to `distil_knowledge`:
 
 ## Stage: report
 
-### Rules
+### Domain Rules
 
 1. Print a per-domain distillation report:
    ```
@@ -152,6 +163,14 @@ Structured summary object (in-memory) passed to `distil_knowledge`:
    ```
 2. If `--all` was used, print a summary table across all processed domains.
 3. If any domain was skipped (too few records), list them with their current record count.
+
+### QoR Metrics to Evaluate
+- `domains_processed`: count of domains where knowledge.md was updated (target ≥ 1)
+- `domains_skipped`: count of domains below the min-records threshold (informational)
+
+### Output Required
+- Printed per-domain distillation report
+- If `--all`: printed summary table across all processed and skipped domains
 
 ---
 
