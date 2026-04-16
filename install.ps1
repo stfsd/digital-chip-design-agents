@@ -10,7 +10,7 @@
 #   .\install.ps1 -IDE opencode -Global     # OpenCode global (~\.config\opencode\)
 #   .\install.ps1 -IDE codex               # OpenAI Codex CLI (AGENTS.md in cwd)
 #   .\install.ps1 -IDE codex -Global       # OpenAI Codex CLI global (~\.codex\instructions.md)
-#   .\install.ps1 -IDE all                  # Claude Code + all four IDEs
+#   .\install.ps1 -IDE all                  # Claude Code + all five IDEs (copilot, gemini, opencode, codex)
 #
 #Requires -Version 5.1
 [CmdletBinding()]

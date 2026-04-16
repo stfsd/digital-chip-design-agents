@@ -11,7 +11,7 @@
 #   bash install.sh --ide opencode --global # OpenCode global (~/.config/opencode/)
 #   bash install.sh --ide codex          # OpenAI Codex CLI (AGENTS.md in cwd)
 #   bash install.sh --ide codex --global  # OpenAI Codex CLI global (~/.codex/instructions.md)
-#   bash install.sh --ide all               # Claude Code + all four IDEs
+#   bash install.sh --ide all               # Claude Code + all five IDEs (copilot, gemini, opencode, codex)
 #
 # Works on macOS, Linux, and Git Bash / MSYS2 on Windows.
 set -euo pipefail
@@ -33,7 +33,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "Unknown argument: $1"
-      echo "Usage: bash install.sh [--ide claude|copilot|gemini|opencode|all] [--global]"
+      echo "Usage: bash install.sh [--ide claude|copilot|gemini|opencode|codex|all] [--global]"
       exit 1
       ;;
   esac
