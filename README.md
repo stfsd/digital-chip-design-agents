@@ -60,7 +60,7 @@ marketplace. First register the marketplace, then install the domains you need:
 
 </details>
 
-### Option C — Other AI assistants (Copilot / Gemini / OpenCode)
+### Option C — Other AI assistants (Copilot / Gemini / OpenCode / Codex CLI)
 
 Run the install script from your chip design project directory with `--ide`:
 
@@ -74,6 +74,9 @@ bash /path/to/digital-chip-design-agents/install.sh --ide gemini
 
 # OpenCode — creates opencode.json in your project; use /mode chip-<domain> to activate
 bash /path/to/digital-chip-design-agents/install.sh --ide opencode
+
+# OpenAI Codex CLI — creates AGENTS.md in your project (or ~/.codex/instructions.md with --global)
+bash /path/to/digital-chip-design-agents/install.sh --ide codex
 
 # All IDEs at once (also installs Claude Code)
 bash /path/to/digital-chip-design-agents/install.sh --ide all
@@ -192,8 +195,10 @@ digital-chip-design-agents/
 │   │   └── applyto-map.json     ← domain → file-glob mapping for per-domain rules
 │   ├── gemini/
 │   │   └── gemini-header.md     ← preamble injected into generated GEMINI.md
-│   └── opencode/
-│       └── opencode-base.json   ← base OpenCode config template
+│   ├── opencode/
+│   │   └── opencode-base.json   ← base OpenCode config template
+│   └── codex/
+│       └── AGENTS.md            ← preamble injected into generated AGENTS.md (Codex CLI)
 │
 ├── memory/                      ← Persistent two-tier memory (per domain)
 │   ├── <domain>/knowledge.md   ← Tier 2: distilled summaries (read at session start)
