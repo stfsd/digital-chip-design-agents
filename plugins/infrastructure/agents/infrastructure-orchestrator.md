@@ -43,7 +43,7 @@ tool_discovery → module_discovery → tool_installation → wrapper_deployment
 - tool_installation FAIL (python3 missing)                      → escalate immediately (python3 required for all wrappers)
 - tool_installation FAIL (python3 module not loaded)            → escalate: "Python available via module `<python_env.module_name>` — source load-modules.sh then re-run"
 - module_discovery WARN (module system not found)               → proceed (module system is optional)
-- module_discovery FAIL (listing command error)                 → proceed with WARN logged (non-fatal)
+- module_discovery WARN (listing command error)                 → proceed (non-fatal; downgrade to WARN since module system is optional)
 - environment_validation FAIL (python_env.type == module, module unloaded) → escalate: "Python environment not active — source load-modules.sh (module: <python_env.module_name>) and re-run environment_validation"
 - environment_validation FAIL (critical tool MISSING)           → tool_installation    (max 2×)
 - environment_validation WARN (critical tool MISSING_LOAD_MODULE)    → escalate: instruct user to source load-modules.sh and re-run
