@@ -209,3 +209,16 @@ and co-simulation to verify RTL matches the golden C model.
 - Co-simulation pass report
 - HLS QoR report (latency, II, area)
 - Interface documentation
+
+---
+
+## Memory
+
+### Write on stage completion
+After each stage completes (regardless of whether an orchestrator session is active),
+write or overwrite one JSON record in `memory/hls/experiences.jsonl` keyed by
+`run_id`. This ensures data is persisted even if the flow is interrupted or called
+without full orchestrator context.
+
+Use `run_id` = `hls_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
+stage update). Set `signoff_achieved: false` until the final sign-off stage completes.

@@ -203,3 +203,16 @@ assume property (@(posedge clk)
 - Formal sign-off report
 - Final property status table
 - LEC clean record
+
+---
+
+## Memory
+
+### Write on stage completion
+After each stage completes (regardless of whether an orchestrator session is active),
+write or overwrite one JSON record in `memory/formal/experiences.jsonl` keyed by
+`run_id`. This ensures data is persisted even if the flow is interrupted or called
+without full orchestrator context.
+
+Use `run_id` = `formal_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
+stage update). Set `signoff_achieved: false` until the final sign-off stage completes.

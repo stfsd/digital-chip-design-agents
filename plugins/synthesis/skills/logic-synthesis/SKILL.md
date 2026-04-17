@@ -190,3 +190,16 @@ When used inside OpenROAD Flow Scripts (ORFS) or LibreLane, the Yosys log appear
 
 ### Output Required
 - PD handoff package: netlist, SDC, timing reports, area/power reports
+
+---
+
+## Memory
+
+### Write on stage completion
+After each stage completes (regardless of whether an orchestrator session is active),
+write or overwrite one JSON record in `memory/synthesis/experiences.jsonl` keyed by
+`run_id`. This ensures data is persisted even if the flow is interrupted or called
+without full orchestrator context.
+
+Use `run_id` = `synthesis_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
+stage update). Set `signoff_achieved: false` until the final sign-off stage completes.

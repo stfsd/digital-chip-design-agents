@@ -220,3 +220,16 @@ void     PERIPH_HandleIRQ(PERIPH_Type *base, periph_handle_t *handle);
 - Test results report
 - Bring-up guide for silicon team
 - Known issues list
+
+---
+
+## Memory
+
+### Write on stage completion
+After each stage completes (regardless of whether an orchestrator session is active),
+write or overwrite one JSON record in `memory/firmware/experiences.jsonl` keyed by
+`run_id`. This ensures data is persisted even if the flow is interrupted or called
+without full orchestrator context.
+
+Use `run_id` = `firmware_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
+stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
