@@ -261,7 +261,7 @@ Note: The top-level `python_env` object is **preserved unchanged** during this s
 
 ### Stage Output Summary
 Print a human-readable table before advancing:
-```
+```text
 Module system : Environment Modules 4.8.0 (TCL)
 Tools in PATH : 12
 Tools via modules : 5
@@ -320,7 +320,7 @@ module load cadence/xcelium/20.09
     ```
     Use `"$PYTHON_EXEC" -m pip install <package>` as the install command. Never use bare `pip install` when `python_env.type` is `"custom"` or `"module"`.
 7. Proprietary tools: no script generated — record a note in the sign-off summary only
-8. Modulefile format: always TCL classic (no file extension); if `module_system == "none"`, emit WARN and skip modulefile generation
+8. Modulefile format: always TCL classic (no file extension); always generate modulefiles unconditionally — if `module_system == "none"`, emit WARN that automatic module loading is unavailable but still output the modulefile
 9. Each script must end with guidance for registering `$EDA_MODULEFILES_ROOT` in `$MODULEPATH` if not already present
 10. Write all `install-<toolname>.sh` scripts to the `install-missing-tools/` directory; create the directory if it does not exist; do **not** create the directory or any scripts if no tools are `MISSING`
 
@@ -334,7 +334,7 @@ module load cadence/xcelium/20.09
 
 ### Install Directory Layout
 
-```
+```text
 $EDA_TOOLS_ROOT/                         (default: /tools)
   <toolname>/<version>/                  e.g. /tools/verilator/5.028/
     bin/
@@ -393,7 +393,7 @@ echo "Modulefile written: ${MODFILE_DIR}/${TOOL_VERSION}"
 # Add the above line to ~/.bashrc or /etc/profile.d/eda-modules.sh
 ```
 
-If `module_system == "none"`: emit WARN in stage output and omit the modulefile block from the install script entirely.
+If `module_system == "none"`: emit WARN in stage output that automatic module loading is unavailable, but still generate the modulefile block in the install script.
 
 **Modulefile content rules:**
 - Minimum env vars in every modulefile: `PATH`, `LD_LIBRARY_PATH`
