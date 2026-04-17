@@ -60,7 +60,7 @@ highest-value MCP use case in the entire flow.
 3. LEC required after every ECO batch — do not accumulate ECOs without equivalence check
 4. ECO count > 2% of cells: hard stop, escalate to physical design team
 5. Do not enter eco_guidance if any exception in exception_review is pending sign-off — block until resolved
-6. Read `memory/sta/knowledge.md` before the first stage and write an experience record to `memory/sta/experiences.jsonl` after signoff or escalation.
+6. Read `memory/sta/knowledge.md` before the first stage. Write an experience record to `memory/sta/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -94,4 +94,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
+If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.

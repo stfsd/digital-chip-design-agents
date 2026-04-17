@@ -46,7 +46,7 @@ bsp_development → peripheral_drivers → rtos_integration → driver_validatio
 2. Do not proceed to rtos_integration until ALL drivers pass unit tests
 3. Track drivers_complete[] in state — partial driver list blocks RTOS stage
 4. Output: validated firmware package + bring-up guide + known issues list
-5. Read `memory/firmware/knowledge.md` before the first stage and write an experience record to `memory/firmware/experiences.jsonl` after signoff or escalation.
+5. Read `memory/firmware/knowledge.md` before the first stage. Write an experience record to `memory/firmware/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -79,4 +79,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
+If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.

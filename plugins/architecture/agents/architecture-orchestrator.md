@@ -85,7 +85,7 @@ Each stage must return:
 2. Enforce loop-back rules strictly — do not proceed past a FAIL
 3. If max iterations exceeded: stop, present full state and escalation report
 4. On completion: produce microarchitecture document and RTL handoff package
-5. Read `memory/architecture/knowledge.md` before the first stage and write an experience record to `memory/architecture/experiences.jsonl` after signoff or escalation.
+5. Read `memory/architecture/knowledge.md` before the first stage. Write an experience record to `memory/architecture/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -118,4 +118,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
+If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.
