@@ -216,4 +216,6 @@ write or overwrite one JSON record in `memory/dft/experiences.jsonl` keyed by
 without full orchestrator context.
 
 Use `run_id` = `dft_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
-stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
+stage update). Every JSON record written must include a top-level `"run_id"` field
+whose value matches this key — reject or regenerate if missing before writing. Set
+`signoff_achieved: false` until the final sign-off stage completes.

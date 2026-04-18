@@ -261,4 +261,6 @@ write or overwrite one JSON record in `memory/compiler/experiences.jsonl` keyed 
 without full orchestrator context.
 
 Use `run_id` = `compiler_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
-stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
+stage update). Every JSON record written must include a top-level `"run_id"` field
+whose value matches this key — this is what makes overwrites unambiguous. Set
+`signoff_achieved: false` until the final sign-off stage completes.

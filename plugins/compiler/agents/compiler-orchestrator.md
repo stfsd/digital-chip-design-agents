@@ -57,10 +57,11 @@ successful tool flags, and PDK-specific notes. If the file does not exist, proce
 without it.
 
 ### Write (session end)
-After signoff (or on escalation/abandon), append one JSON line to
+After signoff (or on escalation/abandon), upsert (create or replace by `run_id`) one JSON line in
 `memory/compiler/experiences.jsonl`:
 ```json
 {
+  "run_id": "<from state>",
   "timestamp": "<ISO-8601>",
   "domain": "compiler",
   "design_name": "<from state>",

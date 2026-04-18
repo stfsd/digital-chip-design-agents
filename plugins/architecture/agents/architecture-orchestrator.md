@@ -50,7 +50,7 @@ When invoking open-source tools, follow the execution hierarchy:
 Initialise and maintain this JSON state across all stages:
 ```json
 {
-  "run_id": "arch_001",
+  "run_id": "architecture_<YYYYMMDD>_<HHMMSS>",
   "design_name": "<from user>",
   "stages": {
     "spec_analysis": { "status": "pending", "output": {} },
@@ -96,10 +96,11 @@ successful tool flags, and PDK-specific notes. If the file does not exist, proce
 without it.
 
 ### Write (session end)
-After signoff (or on escalation/abandon), append one JSON line to
+After signoff (or on escalation/abandon), upsert (create or replace by `run_id`) one JSON line in
 `memory/architecture/experiences.jsonl`:
 ```json
 {
+  "run_id": "<from state>",
   "timestamp": "<ISO-8601>",
   "domain": "architecture",
   "design_name": "<from state>",

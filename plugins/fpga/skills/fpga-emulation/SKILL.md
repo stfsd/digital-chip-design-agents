@@ -237,9 +237,11 @@ provides functional and architectural validation months before silicon.
 
 ### Write on stage completion
 After each stage completes (regardless of whether an orchestrator session is active),
-write or overwrite one JSON record in `memory/fpga/experiences.jsonl` keyed by
-`run_id`. This ensures data is persisted even if the flow is interrupted or called
-without full orchestrator context.
+append one newline-delimited JSON object to `memory/fpga/experiences.jsonl`. Do not
+rewrite the file; always append. Consumers dedup by `run_id` on read (last-seen wins).
 
-Use `run_id` = `fpga_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
-stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
+Use `run_id` = `fpga_<YYYYMMDD>_<HHMMSS>_<6-char-random>` (generated once at flow
+start using a short random suffix to avoid collisions; reuse on each stage append).
+Every appended record must include the top-level `"run_id"` field. Set
+`signoff_achieved: false` on all stage appends; set to `true` only in the final
+sign-off stage append for the matching `run_id`.

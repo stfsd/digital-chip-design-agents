@@ -215,4 +215,7 @@ write or overwrite one JSON record in `memory/formal/experiences.jsonl` keyed by
 without full orchestrator context.
 
 Use `run_id` = `formal_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
-stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
+stage update). Every JSON record written must include a top-level `"run_id"` field
+whose value matches this key — stage writes must upsert/overwrite by matching this
+persisted `run_id`. Set `signoff_achieved: false` until the final sign-off stage
+completes.
