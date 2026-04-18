@@ -70,7 +70,7 @@ and make agents context-aware
 
 ### Minimum fields
 
-- Spec (natural langauge + structured interpretation)
+- Spec (natural language + structured interpretation)
 - Interfaces (e.g., AXI3-lite definition)
 - Constraints (timing, area if available)
 - RTL (current version)
@@ -86,7 +86,7 @@ failures back to the RTL agent
 
 The flow changes from:
 
-Architecture --> RTL --> Verifcation
+Architecture --> RTL --> Verification
 
 To:
 
@@ -101,12 +101,12 @@ RTL --> Verify --> Fix --> Verify --> (Repeat until pass)
   - Task definition
 - Output
   - Updated design_state fields
-  - Artifacts (RTL, reports, etc)
+  - Artifacts (RTL, reports, etc.)
   - Status (success/fail/needs clarification)
   - Confidence level
   - Suggested next step
 
-This is important to prevent agent drift, make orchestration predictable and 
+This is important to prevent agent drift, make orchestration predictable and
 enable retry logic later
 
 ## 8. Constraint Awareness
@@ -141,12 +141,12 @@ Define failure classes:
 - Incomplete spec
 
 Each agent should tag failures and suggest retry strategies, such as regenerate,
-refine, escalate, etc
+refine, escalate, etc.
 
 ## 11. Human-in-the-loop Control Points + Observability
 
-Insert checkpoints after architecture generation, before final RTL freeze, etc
-Agents can ask for clarification if spec is ambigious and/or request for approval
+Insert checkpoints after architecture generation, before final RTL freeze, etc.
+Agents can ask for clarification if spec is ambiguous and/or request for approval
 before proceeding
 This can help to ensure that there are always checkpoints where humans can review
 the agents work before moving on to the next stage
