@@ -65,92 +65,194 @@ Revisit if tool version mismatches cause repeated debugging across sessions.
 
 ## 5. Central "Design" State
 
-Provide a structured object that all agents read/write to enable iterations instead of a linear flow
-and make agents context-aware
+Today each orchestrator maintains its own session-scoped state object. There is no shared
+artifact that survives an orchestrator boundary, so downstream agents cannot see upstream
+decisions (e.g., RTL coding cannot query the architecture trade-off rationale).
+
+Introduce a persistent `design_state.json` written to the working directory. Every orchestrator
+reads it on entry and appends its results on exit. This replaces the ad-hoc inter-orchestrator
+handoff packages currently documented in `docs/MASTER_INDEX.md`.
 
 ### Minimum fields
 
-- Spec (natural language + structured interpretation)
-- Interfaces (e.g., AXI3-lite definition)
-- Constraints (timing, area if available)
-- RTL (current version)
-- Verification status
-- Tool feedback (if any)
-- History (decisions, iterations)
+```json
+{
+  "spec": { "raw": "<natural language>", "structured": {} },
+  "interfaces": [{ "name": "AXI3-lite", "width": 32, "role": "subordinate" }],
+  "constraints": { "clk_mhz": 500, "area_um2": null, "power_mw": null },
+  "rtl": { "top_module": null, "files": [], "lint_clean": false, "cdc_clean": false },
+  "verification_status": { "coverage_pct": null, "signoff": false },
+  "tool_feedback": [],
+  "history": []
+}
+```
+
+`history[]` entries record the agent, stage, decision, reason, and constraint reference so that
+the entire evolution of the design is traceable across sessions.
+
+**Prerequisite for:** items 6, 8, 9, 11.
 
 ## 6. Continuous Verification Loop
 
-Generate testbenches from spec and run simulation (even basic), and detect 
-functional mismatches and interface violations (e.g., AXI behavior), and feed 
-failures back to the RTL agent
+Each orchestrator already loops within its own domain (e.g., lint fail → re-run RTL coding,
+coverage gap → re-run constrained random). What is missing is a feedback path *across*
+orchestrator boundaries: when the verification orchestrator finds a DUT bug, there is no
+automated callback to the RTL orchestrator.
 
 The flow changes from:
 
-Architecture --> RTL --> Verification
+```
+Architecture → RTL → Verification  (linear, no feedback)
+```
 
 To:
 
-RTL --> Verify --> Fix --> Verify --> (Repeat until pass)
+```
+RTL → Verify → [bug found?] → RTL (with bug context) → Verify → … → pass
+```
+
+**Scope of change:**
+- Verification orchestrator writes a structured "RTL fix request" to `design_state.json`
+  on DUT bug detection (functional mismatch or AXI protocol violation).
+- A thin meta-orchestrator (or a cross-domain loop rule) detects the pending request
+  and re-invokes the RTL orchestrator from the `rtl_coding` stage, passing the bug context.
+- Maximum cross-domain iterations: 3 before escalating to the user.
+
+**Prerequisite:** item 5 (design_state.json must exist for the fix request handoff).
 
 ## 7. Agent Contract Standardization
 
-**Feature**: Unified agent I/O contract
+The stage-agent output format defined in `docs/MASTER_INDEX.md` is already close to a
+unified contract, but three fields are missing: confidence score, failure class, and
+suggested next step. Without these, orchestrators use ad-hoc `recommendation` strings
+and cannot drive retry logic programmatically.
 
-- Input
-  - design_state
-  - Task definition
-- Output
-  - Updated design_state fields
-  - Artifacts (RTL, reports, etc.)
-  - Status (success/fail/needs clarification)
-  - Confidence level
-  - Suggested next step
+**Target stage-agent output schema (additions in bold):**
 
-This is important to prevent agent drift, make orchestration predictable and
-enable retry logic later
+```json
+{
+  "stage": "<stage_name>",
+  "status": "PASS | FAIL | WARN",
+  "qor": {},
+  "issues": [{ "severity": "ERROR | WARN", "description": "...", "fix": "..." }],
+  "recommendation": "proceed | loop_back_to:<stage> | escalate",
+  "output": {},
+  "confidence": 0.85,
+  "failure_class": "none | invalid_rtl | verification_failure | interface_mismatch | incomplete_spec",
+  "suggested_next_step": "<agent_or_stage_name>"
+}
+```
+
+`confidence` (0.0–1.0) allows orchestrators to weight outputs when multiple candidates
+exist or when deciding whether to proceed without human review (item 11).
+`failure_class` feeds directly into the retry strategy table in item 10.
+`suggested_next_step` makes orchestration logic explicit rather than embedded in prose rules.
+
+All 14 orchestrator `.md` files must be updated to emit and consume these fields.
 
 ## 8. Constraint Awareness
 
-Agents should handle clock assumptions, interface requirements and basic performance expectations
+Constraints currently live as prose in SKILL.md files or as file paths (SDC, LEF) in
+orchestrator state. Agents embed constraint values in their rules rather than reading them
+from a shared source, so a change to the clock target requires editing multiple skill files.
 
-**Agent Behavior Changes**:
+**Agent Behavior Changes:**
 
-- Query constraints before generating output
-- Justify decisions relative to constraints
+- On stage entry, read `design_state.constraints` (item 5) and fail fast if required
+  constraints are absent rather than assuming defaults silently.
+- Tag each design decision with the constraint it satisfies, e.g.:
+  `"meets_constraint": "clk_core ≥ 500 MHz"`.
+- If a constraint cannot be met, set `failure_class: interface_mismatch` or
+  `incomplete_spec` (item 10) and halt rather than producing a non-compliant output.
+
+**Affected domains:** architecture, RTL, synthesis, STA, PD — all have timing/area
+targets that are currently hardcoded in skill rules.
+
+**Prerequisite:** item 5.
 
 ## 9. Architecture Exploration Improvement
 
-Architecture agent should:
+The architecture SKILL.md already mandates generating three candidates (conservative,
+balanced, aggressive) with a trade-off matrix. The gap is that candidates exist only
+in the session context — they are not persisted, and there is no mechanism for a
+downstream failure (e.g., synthesis cannot close timing) to trigger a return to
+architecture with that constraint violation as input.
 
-- Generate multiple candidate designs
-- Compare them on:
-  - Complexity
-  - Expected performance
-- Select or refine
+**Improvements:**
 
-This is an important step as it helps to reduce early bad decisions and makes
-the system more robust without needing perfect prompts
+- Persist the full trade-off matrix to `design_state.json` under
+  `architecture.candidates[]` so downstream agents can reference the rejected options.
+- Add a `refinement_needed` flag: if synthesis or PD sets
+  `design_state.architecture.refinement_needed = true` with a reason, the architecture
+  orchestrator re-enters at `perf_modelling` using the persisted candidates as a
+  starting point rather than generating from scratch.
+- Extend `memory/architecture/experiences.jsonl` schema to record
+  `candidates_evaluated` count and `winning_candidate_profile` for cross-design learning.
+
+This reduces early bad decisions without requiring perfect up-front prompts, and
+leverages the memory system already in place.
+
+**Prerequisite:** item 5.
 
 ## 10. Structured Failure Handling
 
-Define failure classes:
+All failures currently land in the same `issues[]` array with only `ERROR | WARN`
+severity. Orchestrators apply hardcoded loop-back rules per stage but have no
+structured way to distinguish a recoverable code error from an ambiguous spec.
 
-- Invalid RTL
-- Verification failure
-- Interface mismatch
-- Incomplete spec
+**Failure class taxonomy** (maps to `failure_class` field from item 7):
 
-Each agent should tag failures and suggest retry strategies, such as regenerate,
-refine, escalate, etc.
+| Class | Definition | Default retry strategy |
+|---|---|---|
+| `invalid_rtl` | Syntax, lint, or CDC errors in generated RTL | `regenerate` — re-run rtl_coding with error context |
+| `verification_failure` | DUT functional bug found by simulation | `refine` — re-run rtl_coding with failing test + waveform |
+| `interface_mismatch` | AXI/protocol violation or port width conflict | `refine` — re-run rtl_coding targeting the violated interface |
+| `incomplete_spec` | Ambiguous or missing requirement blocks progress | `escalate` — halt and request user clarification |
+
+**Agent behavior changes:**
+- Tag every FAIL status with one of the four classes above.
+- Attach `retry_strategy` to the issue: `regenerate | refine | escalate`.
+- If max loop iterations are reached, the escalation message must include the failure
+  class and a plain-language description of what information the user must provide to
+  unblock the flow.
+
+**Prerequisite:** item 7 (failure_class field in output contract).
 
 ## 11. Human-in-the-loop Control Points + Observability
 
-Insert checkpoints after architecture generation, before final RTL freeze, etc.
-Agents can ask for clarification if spec is ambiguous and/or request for approval
-before proceeding
-This can help to ensure that there are always checkpoints where humans can review
-the agents work before moving on to the next stage
+Currently the only human interaction points are invocation and max-iteration escalation.
+There are no optional approval gates between pipeline stages, and there is no structured
+record of why an agent made a particular decision.
 
-Add execution trace to track which agent did what, why decisions are made and how
-design evolved
-This is to make sure there is a clear relationship between decision and output
+### Approval Checkpoints
+
+Add a `require_approval` flag to configurable stage transitions in `design_state.json`.
+When set, the orchestrator writes a human-readable summary to
+`design_state.pending_approval` and halts. The user resumes by setting
+`design_state.approved_by_human: true` (manually or via a `--approve` flag).
+
+Suggested default checkpoint positions:
+- After `arch_signoff` — before RTL coding begins
+- After `rtl_signoff` — before verification or synthesis begins
+- Before tape-out (PD `signoff` stage)
+
+### Execution Trace
+
+Each stage completion appends an entry to `design_state.history[]`:
+
+```json
+{
+  "timestamp": "2026-04-18T10:00:00Z",
+  "agent": "architecture-orchestrator",
+  "stage": "arch_signoff",
+  "decision": "proceed",
+  "reason": "Balanced candidate meets timing with >20% WNS headroom.",
+  "constraint_ref": "clk_core_500MHz"
+}
+```
+
+This provides a clear relationship between each decision and its output, and enables
+post-run audits without replaying the full agent conversation.
+
+**Prerequisite:** item 5 (design_state.json), item 7 (confidence score informs whether
+approval is required).
