@@ -62,3 +62,95 @@ Track tool versions, install paths, and MCP configuration choices across setups 
 - MCP configuration is already stored in `.claude/settings.json`
 
 Revisit if tool version mismatches cause repeated debugging across sessions.
+
+## 5. Central "Design" State
+
+Provide a structured object that all agents read/write to enable iterations instead of a linear flow
+and make agents context-aware
+
+### Minimum fields
+
+- Spec (natural language + structured interpretation)
+- Interfaces (e.g., AXI3-lite definition)
+- Constraints (timing, area if available)
+- RTL (current version)
+- Verification status
+- Tool feedback (if any)
+- History (decisions, iterations)
+
+## 6. Continuous Verification Loop
+
+Generate testbenches from spec and run simulation (even basic), and detect 
+functional mismatches and interface violations (e.g., AXI behavior), and feed 
+failures back to the RTL agent
+
+The flow changes from:
+
+Architecture --> RTL --> Verification
+
+To:
+
+RTL --> Verify --> Fix --> Verify --> (Repeat until pass)
+
+## 7. Agent Contract Standardization
+
+**Feature**: Unified agent I/O contract
+
+- Input
+  - design_state
+  - Task definition
+- Output
+  - Updated design_state fields
+  - Artifacts (RTL, reports, etc.)
+  - Status (success/fail/needs clarification)
+  - Confidence level
+  - Suggested next step
+
+This is important to prevent agent drift, make orchestration predictable and
+enable retry logic later
+
+## 8. Constraint Awareness
+
+Agents should handle clock assumptions, interface requirements and basic performance expectations
+
+**Agent Behavior Changes**:
+
+- Query constraints before generating output
+- Justify decisions relative to constraints
+
+## 9. Architecture Exploration Improvement
+
+Architecture agent should:
+
+- Generate multiple candidate designs
+- Compare them on:
+  - Complexity
+  - Expected performance
+- Select or refine
+
+This is an important step as it helps to reduce early bad decisions and makes
+the system more robust without needing perfect prompts
+
+## 10. Structured Failure Handling
+
+Define failure classes:
+
+- Invalid RTL
+- Verification failure
+- Interface mismatch
+- Incomplete spec
+
+Each agent should tag failures and suggest retry strategies, such as regenerate,
+refine, escalate, etc.
+
+## 11. Human-in-the-loop Control Points + Observability
+
+Insert checkpoints after architecture generation, before final RTL freeze, etc.
+Agents can ask for clarification if spec is ambiguous and/or request for approval
+before proceeding
+This can help to ensure that there are always checkpoints where humans can review
+the agents work before moving on to the next stage
+
+Add execution trace to track which agent did what, why decisions are made and how
+design evolved
+This is to make sure there is a clear relationship between decision and output
