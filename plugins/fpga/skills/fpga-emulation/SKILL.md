@@ -240,8 +240,25 @@ After each stage completes (regardless of whether an orchestrator session is act
 append one newline-delimited JSON object to `memory/fpga/experiences.jsonl`. Do not
 rewrite the file; always append. Consumers dedup by `run_id` on read (last-seen wins).
 
-Use `run_id` = `fpga_<YYYYMMDD>_<HHMMSS>_<6-char-random>` (generated once at flow
-start using a short random suffix to avoid collisions; reuse on each stage append).
-Every appended record must include the top-level `"run_id"` field. Set
-`signoff_achieved: false` on all stage appends; set to `true` only in the final
-sign-off stage append for the matching `run_id`.
+Use `run_id` = `fpga_<YYYYMMDD>_<HHMMSS>_<6-char-random>` where the 6-character suffix
+is a lowercase hexadecimal string `[0-9a-f]` generated once at flow start using a secure
+or pseudorandom RNG and reused unchanged on every stage append for this run.
+
+Each appended record must conform to the following schema:
+```json
+{
+  "run_id":           "fpga_20260418_143052_a3f7b1",
+  "stage":            "<stage_name>",
+  "timestamp":        "<ISO-8601>",
+  "signoff_achieved": false,
+  "outcomes":         { "<key>": "<value>" },
+  "metrics":          { "<key>": "<value>" },
+  "tools":            [{ "name": "<tool>", "version": "<version>", "result": "<pass|fail>" }],
+  "notes":            "<optional free-text>"
+}
+```
+
+Field types: `run_id` and `stage` are non-empty strings; `timestamp` is ISO-8601;
+`signoff_achieved` is a boolean (`false` for all stage appends; `true` only in the final
+sign-off append for the matching `run_id`); `outcomes` and `metrics` are objects; `tools`
+is an array of objects; `notes` is an optional string.

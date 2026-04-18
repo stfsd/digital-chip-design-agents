@@ -61,11 +61,13 @@ When invoking open-source tools, follow the execution hierarchy:
 Before beginning `ip_procurement`, read `memory/soc/knowledge.md` if it exists.
 Incorporate its guidance into stage decisions — especially known failure patterns,
 successful tool flags, and PDK-specific notes. If the file does not exist, proceed
-without it.
+without it. Also initialise `state.run_id` to `soc_<YYYYMMDD>_<HHMMSS>` at this
+point; all subsequent stage writes and upsert operations must reference this value.
 
 ### Write (session end)
-After signoff (or on escalation/abandon), upsert (create or replace by `run_id`) one JSON line in
-`memory/soc/experiences.jsonl`:
+On any termination path (signoff, escalation, abandon, interruption, error, or max-turns), upsert
+(create or replace by `run_id`) one JSON line in `memory/soc/experiences.jsonl` immediately with
+the current stage state:
 ```json
 {
   "run_id": "<from state>",
@@ -87,5 +89,4 @@ After signoff (or on escalation/abandon), upsert (create or replace by `run_id`)
   "notes": "<free-text observations>"
 }
 ```
-If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.
