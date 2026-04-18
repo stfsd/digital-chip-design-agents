@@ -50,7 +50,7 @@ When invoking open-source tools, follow the execution hierarchy:
 1. Read logic-synthesis skill before each stage
 2. On completion: produce PD handoff package (netlist, SDC, timing/area/power reports)
 3. LEC must be run after every netlist change — not just at sign-off
-4. Read `memory/synthesis/knowledge.md` before the first stage and write an experience record to `memory/synthesis/experiences.jsonl` after signoff or escalation.
+4. Read `memory/synthesis/knowledge.md` before the first stage. Write an experience record to `memory/synthesis/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -84,4 +84,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
+If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.

@@ -201,3 +201,16 @@ PPA modelling, risk assessment, and sign-off.
 - Final trade-off decision record
 - RTL design guidelines
 - Hand-off package
+
+---
+
+## Memory
+
+### Write on stage completion
+After each stage completes (regardless of whether an orchestrator session is active),
+write or overwrite one JSON record in `memory/architecture/experiences.jsonl` keyed by
+`run_id`. This ensures data is persisted even if the flow is interrupted or called
+without full orchestrator context.
+
+Use `run_id` = `architecture_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
+stage update). Set `signoff_achieved: false` until the final sign-off stage completes.

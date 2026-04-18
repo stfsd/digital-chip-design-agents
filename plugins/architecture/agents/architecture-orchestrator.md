@@ -50,7 +50,7 @@ When invoking open-source tools, follow the execution hierarchy:
 Initialise and maintain this JSON state across all stages:
 ```json
 {
-  "run_id": "arch_001",
+  "run_id": "architecture_<YYYYMMDD>_<HHMMSSmmm>_<shortUUID>",
   "design_name": "<from user>",
   "stages": {
     "spec_analysis": { "status": "pending", "output": {} },
@@ -85,7 +85,7 @@ Each stage must return:
 2. Enforce loop-back rules strictly — do not proceed past a FAIL
 3. If max iterations exceeded: stop, present full state and escalation report
 4. On completion: produce microarchitecture document and RTL handoff package
-5. Read `memory/architecture/knowledge.md` before the first stage and write an experience record to `memory/architecture/experiences.jsonl` after signoff or escalation.
+5. Read `memory/architecture/knowledge.md` before the first stage. Write an experience record to `memory/architecture/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -96,10 +96,15 @@ successful tool flags, and PDK-specific notes. If the file does not exist, proce
 without it.
 
 ### Write (session end)
-After signoff (or on escalation/abandon), append one JSON line to
-`memory/architecture/experiences.jsonl`:
+On any termination path (signoff, escalation, abandonment, interruption, error, or max-turns
+reached), upsert one JSON record in `memory/architecture/experiences.jsonl`. Implement the
+upsert by reading the file as newline-delimited JSON objects, filtering out any existing line
+where `run_id` matches the incoming value, appending the new record as a single JSON line, and
+atomically replacing the file (write to a temp file, then rename) to avoid partial writes. Each
+line must be a valid JSON object followed by a newline:
 ```json
 {
+  "run_id": "<from state>",
   "timestamp": "<ISO-8601>",
   "domain": "architecture",
   "design_name": "<from state>",
@@ -118,4 +123,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
-Create the file and parent directories if they do not exist.
+Set `signoff_achieved: false` on partial runs (interrupted, error, max-turns); set to `true` only
+on successful signoff. Create the file and parent directories if they do not exist.

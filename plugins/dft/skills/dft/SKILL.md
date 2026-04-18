@@ -204,3 +204,18 @@ chip meets quality targets (fault coverage and DPPM).
 - Final test pattern files
 - BSDL file
 - DFT netlist (input to PD)
+
+---
+
+## Memory
+
+### Write on stage completion
+After each stage completes (regardless of whether an orchestrator session is active),
+write or overwrite one JSON record in `memory/dft/experiences.jsonl` keyed by
+`run_id`. This ensures data is persisted even if the flow is interrupted or called
+without full orchestrator context.
+
+Use `run_id` = `dft_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
+stage update). Every JSON record written must include a top-level `"run_id"` field
+whose value matches this key — reject or regenerate if missing before writing. Set
+`signoff_achieved: false` until the final sign-off stage completes.

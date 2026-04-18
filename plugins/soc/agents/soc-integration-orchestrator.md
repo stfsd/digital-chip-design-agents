@@ -53,7 +53,7 @@ When invoking open-source tools, follow the execution hierarchy:
 2. Block progression if any IP has unresolved qualification issues
 3. Track ip_status{} per IP in state — never proceed with unqualified IP
 4. Output: integrated SoC RTL package ready for synthesis
-5. Read `memory/soc/knowledge.md` before the first stage and write an experience record to `memory/soc/experiences.jsonl` after signoff or escalation.
+5. Read `memory/soc/knowledge.md` before the first stage. Write an experience record to `memory/soc/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -61,13 +61,16 @@ When invoking open-source tools, follow the execution hierarchy:
 Before beginning `ip_procurement`, read `memory/soc/knowledge.md` if it exists.
 Incorporate its guidance into stage decisions — especially known failure patterns,
 successful tool flags, and PDK-specific notes. If the file does not exist, proceed
-without it.
+without it. Also initialise `state.run_id` to `soc_<YYYYMMDD>_<HHMMSS>` at this
+point; all subsequent stage writes and upsert operations must reference this value.
 
 ### Write (session end)
-After signoff (or on escalation/abandon), append one JSON line to
-`memory/soc/experiences.jsonl`:
+On any termination path (signoff, escalation, abandon, interruption, error, or max-turns), upsert
+(create or replace by `run_id`) one JSON line in `memory/soc/experiences.jsonl` immediately with
+the current stage state:
 ```json
 {
+  "run_id": "<from state>",
   "timestamp": "<ISO-8601>",
   "domain": "soc",
   "design_name": "<from state>",

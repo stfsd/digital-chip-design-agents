@@ -46,7 +46,7 @@ isa_analysis → backend_dev → assembler_dev → linker_config → runtime_lib
 2. Miscompilation (wrong output) = P0 blocker — root cause required before retry
 3. Implement backend in order: registers → integer ISA → calling convention → FPU → custom instructions
 4. Output: toolchain release package + validation report + ABI spec
-5. Read `memory/compiler/knowledge.md` before the first stage and write an experience record to `memory/compiler/experiences.jsonl` after signoff or escalation.
+5. Read `memory/compiler/knowledge.md` before the first stage. Write an experience record to `memory/compiler/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -57,10 +57,11 @@ successful tool flags, and PDK-specific notes. If the file does not exist, proce
 without it.
 
 ### Write (session end)
-After signoff (or on escalation/abandon), append one JSON line to
+After signoff (or on escalation/abandon), upsert (create or replace by `run_id`) one JSON line in
 `memory/compiler/experiences.jsonl`:
 ```json
 {
+  "run_id": "<from state>",
   "timestamp": "<ISO-8601>",
   "domain": "compiler",
   "design_name": "<from state>",
@@ -79,4 +80,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
+If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.

@@ -54,7 +54,7 @@ When invoking open-source tools, follow the execution hierarchy:
 2. Track all bugs in state bugs_found[] — do not discard between stages
 3. Do not proceed to regression_signoff if any P0/P1 bugs remain open
 4. Bug found during directed tests: suspend flow; present RTL fix required report
-5. Read `memory/verification/knowledge.md` before the first stage and write an experience record to `memory/verification/experiences.jsonl` after signoff or escalation.
+5. Read `memory/verification/knowledge.md` before the first stage. Write an experience record to `memory/verification/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -87,4 +87,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
+If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.

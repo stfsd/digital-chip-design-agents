@@ -65,7 +65,7 @@ placed/routed, prefer:
 2. Update global_qor after every stage — track WNS/TNS/power/area/DRC through flow
 3. Never proceed past a FAIL without applying the loop-back rule
 4. Output: GDS-II, sign-off STA report, DRC clean, LVS clean, power report
-5. Read `memory/pd/knowledge.md` before the first stage and write an experience record to `memory/pd/experiences.jsonl` after signoff or escalation.
+5. Read `memory/pd/knowledge.md` before the first stage. Write an experience record to `memory/pd/experiences.jsonl` whenever the flow terminates — including signoff, escalation, max-iterations exceeded, early error, or user interruption. If signoff was not achieved, set `signoff_achieved: false` and populate only the stages that completed.
 
 ## Memory
 
@@ -76,10 +76,11 @@ successful tool flags, and PDK-specific notes. If the file does not exist, proce
 without it.
 
 ### Write (session end)
-After signoff (or on escalation/abandon), append one JSON line to
+After signoff (or on escalation/abandon), upsert (create or replace by `run_id`) one JSON line in
 `memory/pd/experiences.jsonl`:
 ```json
 {
+  "run_id": "<from state>",
   "timestamp": "<ISO-8601>",
   "domain": "pd",
   "design_name": "<from state>",
@@ -99,4 +100,5 @@ After signoff (or on escalation/abandon), append one JSON line to
   "notes": "<free-text observations>"
 }
 ```
+If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
 Create the file and parent directories if they do not exist.
