@@ -310,7 +310,7 @@ mode_display = {
     'fpga':         ('chip-fpga',         'FPGA Emulation'),
 }
 
-base  = json.load(open(os.path.join(repo_dir, 'ides', 'opencode', 'opencode-base.json')))
+base = json.load(open(os.path.join(repo_dir, 'ides', 'opencode', 'opencode-base.json')))
 modes = {}
 
 agent_files = sorted(glob.glob(os.path.join(repo_dir, 'plugins', '*', 'agents', '*.md')))
@@ -324,14 +324,15 @@ for agent_path in agent_files:
     desc = desc[:120]
 
     mode_key, mode_name = mode_display.get(domain, ('chip-' + domain, domain.replace('-', ' ').title()))
-    modes[mode_key] = {'name': mode_name, 'description': desc, 'prompt': agent_path}
+    prompt_path = agent_path if os.path.isabs(agent_path) else os.path.relpath(agent_path, os.path.dirname(target))
+    modes[mode_key] = {'name': mode_name, 'description': desc, 'model': base.get('model', 'anthropic/claude-sonnet-4-5'), 'prompt': '{file:' + prompt_path + '}'}
 
 if is_global and os.path.exists(target):
     existing = json.load(open(target))
-    existing.setdefault('modes', {}).update(modes)
+    existing.setdefault('mode', {}).update(modes)
     out = existing
 else:
-    base['modes'] = modes
+    base['mode'] = modes
     out = base
     if is_global:
         os.makedirs(os.path.dirname(target), exist_ok=True)
