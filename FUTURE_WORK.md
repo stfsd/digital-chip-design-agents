@@ -256,3 +256,71 @@ post-run audits without replaying the full agent conversation.
 
 **Prerequisite:** item 5 (design_state.json), item 7 (confidence score informs whether
 approval is required).
+
+## 12. New Adjacent Agent Domains
+
+The following domains are adjacent to the current 14-plugin pipeline and are not yet covered.
+Each represents a distinct discipline with its own toolchain and sign-off criteria.
+
+| Domain | Rationale | Key tools |
+|--------|-----------|-----------|
+| **Power Intent / UPF** | Multi-voltage, low-power design (UPF/CPF authoring, power domain verification, isolation/retention cell insertion). Mandatory for mobile/IoT chips and not covered by RTL, Synthesis, or PD agents. | Synopsys MVSIM, Cadence CPF tools, open-source: uvmf-power |
+| **Silicon Validation / Debug** | Post-silicon failure analysis, ATE interface bring-up, scan dump triage, silicon characterisation. Completely unaddressed by any current agent. | Teradyne UltraFLEX, Advantest V93000, internal ATE scripts |
+| **Package & Chiplet / 2.5D-3D** | Die-to-die interface definition (UCIe, HBM), bump/RDL floorplanning, package-level SI/PI analysis. Distinct from chip-level PD. | Cadence Sigrity, Synopsys 3DIC Compiler, open-source: KiCad |
+| **Security / Hardware Roots-of-Trust** | Side-channel analysis (power/EM), fault injection modelling, secure boot ROM design, PUF integration. Cross-cuts RTL and firmware but warrants its own specialist agent. | ChipWhisperer, SideChannelMarvels, Synopsys DesignWare Security |
+| **NoC / Interconnect Design** | Network-on-Chip topology exploration, latency/bandwidth modelling, flit-level simulation. Currently assumed inside SoC integration but deep enough for a dedicated agent. | gem5 (network mode), Noxim, open-source: OpenSoC Fabric |
+| **Emulation Platform (ZeBu/Palladium)** | Hardware emulation bringup (Synopsys ZeBu, Cadence Palladium) is distinct from FPGA prototyping — different partitioning problem, transaction-based interfaces, and tool flow. | Synopsys ZeBu, Cadence Palladium, Mentor Veloce |
+| **AMS Integration** | Qualifying analog IP blocks (PLLs, ADCs, LDOs, SerDes), generating behavioral/Verilog-A models for digital co-simulation, and guiding analog peripheral firmware bring-up. Scoped as an *integration* agent rather than a full analog design agent (full analog closure requires human waveform review and is not automatable end-to-end). | ngspice, Xyce, Xschem, Spectre (behavioral model generation only) |
+
+**Recommended priority:** Power Intent/UPF and Silicon Validation fill the most immediate gaps
+and connect directly to existing agents. AMS Integration adds value for SoC flows that pull in
+analog IP. The remaining domains are longer-term additions.
+
+## 13. Domain Breakdown: Sub-Agent Specialisation
+
+Several existing agents cover broad enough scope that splitting them into focused sub-agents
+would improve parallelism, reduce context window pressure, and sharpen sign-off criteria.
+The central design state (item 5) is a prerequisite for clean handoffs between sub-agents.
+
+### Proposed Splits
+
+**Physical Design → 3 sub-agents** *(highest priority — broadest current scope)*
+- `pd-floorplan`: I/O placement, macro placement, power grid planning (70–80% utilisation target)
+- `pd-implementation`: Placement, CTS (skew <150 ps), routing, DRC/LVS clean
+- `pd-signoff`: Antenna fix, fill insertion, GDS export, tape-out checklist
+
+**Verification → 3 sub-agents** *(after design state is implemented)*
+- `verification-tb`: UVM TB architecture, agent design, scoreboard, coverage model definition
+- `verification-regression`: Test plan execution, constrained-random stimulus, coverage closure (≥95%)
+- `verification-emulation`: Firmware-driven verification on FPGA/emulator prototype
+
+**Firmware → 3 sub-agents** *(after design state is implemented)*
+- `firmware-bsp`: Board support package, linker scripts, startup code, peripheral drivers
+- `firmware-rtos`: RTOS porting (FreeRTOS/Zephyr), task design, IPC primitives
+- `firmware-bringup`: Chip bring-up scripts, JTAG/UART debug, post-silicon smoke tests
+
+**Hold (do not split yet):** STA and DFT — already well-scoped; fragmentation overhead
+outweighs benefit at current agent count.
+
+### Pros of Finer-Grained Breakdown
+
+| # | Benefit |
+|---|---------|
+| 1 | Tighter SKILL.md focus — one clear responsibility per file, easier to maintain |
+| 2 | Smaller context window per run — more tokens available for design artefacts |
+| 3 | Parallel execution — independent sub-agents (e.g., `pd-floorplan` + `verification-tb`) run concurrently |
+| 4 | Deeper tool integration — a dedicated agent can specialise on one tool without cluttering a broad skill |
+| 5 | Cleaner per-stage sign-off gates — one well-defined done criterion per agent |
+
+### Cons of Finer-Grained Breakdown
+
+| # | Risk |
+|---|------|
+| 1 | Cross-agent state explosion — more handoffs break without central design state (item 5) |
+| 2 | Orchestration overhead — parent orchestrator must sequence more children; more failure modes |
+| 3 | Redundant context loading — shared context (PDK rules, timing targets) re-loaded on each cold start |
+| 4 | Marketplace discoverability — 20+ entries increases cognitive load for users choosing an agent |
+| 5 | Maintenance burden — more `plugin.json` manifests, SKILL.md files, and memory directories to keep in sync |
+
+**Prerequisite for all splits:** item 5 (central design state) must be implemented first
+so sub-agents can share artefacts without dropping data at boundaries.
