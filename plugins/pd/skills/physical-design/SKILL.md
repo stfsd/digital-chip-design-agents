@@ -309,9 +309,9 @@ design_name: <design>
 pdk:         <pdk or unknown>
 tool:        <primary tool>
 start_time:  <ISO-8601>
-last_stage:  <stage name>
+last_stage:  null
 ```
-Update `last_stage` after each stage completes. This file allows wakeup-loop prompts
+Update `last_stage` to the completed stage name only after each stage finishes successfully. This file allows wakeup-loop prompts
 and resumed sessions to identify the correct run directory without relying on in-memory state.
 
 ### Write on stage completion
