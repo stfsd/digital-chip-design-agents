@@ -25,6 +25,19 @@ allowed-tools: Read, Write, Bash
 Spawning the orchestrator from within an active orchestrator run causes recursive
 delegation and must never happen.
 
+## Pre-run Context
+
+Before executing or advising on **any** stage, read the following files if they exist:
+
+1. `memory/pd/knowledge.md` — known failure patterns, successful tool flags, PDK quirks.
+   Incorporate its guidance into every stage decision. If absent, proceed without it.
+2. `memory/pd/run_state.md` — current run identity (`run_id`, `design_name`, `pdk`,
+   `last_stage`). Use this to resume correctly after interruption. If absent, a new run
+   is starting; the orchestrator will create this file before the first stage.
+
+This pre-run read applies whether this skill is loaded by a user or called by the
+orchestrator mid-flow. It ensures the fix database is consulted before any diagnosis step.
+
 ## Purpose
 Guide the complete physical implementation flow from gate-level netlist to
 tape-out-ready GDS-II. Eight stages with explicit QoR gates and loop-back
@@ -288,11 +301,30 @@ Resume from step: `openlane --from <step_name> <config.json>`
 
 ## Memory
 
+### Run state (write before first stage, update after each stage)
+Write `memory/pd/run_state.md` as the **first action** before launching any tool:
+```markdown
+run_id:      pd_<YYYYMMDD>_<HHMMSS>
+design_name: <design>
+pdk:         <pdk or unknown>
+tool:        <primary tool>
+start_time:  <ISO-8601>
+last_stage:  <stage name>
+```
+Update `last_stage` after each stage completes. This file allows wakeup-loop prompts
+and resumed sessions to identify the correct run directory without relying on in-memory state.
+
 ### Write on stage completion
 After each stage completes (regardless of whether an orchestrator session is active),
-write or overwrite one JSON record in `memory/pd/experiences.jsonl` keyed by
-`run_id`. This ensures data is persisted even if the flow is interrupted or called
-without full orchestrator context.
+upsert one JSON record in `memory/pd/experiences.jsonl` keyed by `run_id` — do not
+append a second line for the same run. Write with the stages completed so far and
+`signoff_achieved: false`; overwrite to `true` only when signoff passes.
 
 Use `run_id` = `pd_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
-stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
+stage update). Create the file and parent directories if they do not exist.
+
+### Optional: claude-mem index
+If `mcp__plugin_ecc_memory__add_observations` is available in this session, also emit
+each new fix as an observation to entity `chip-design-pd-fixes` after writing to
+`experiences.jsonl`. Skip this step silently if the tool is absent — the JSONL file
+is the canonical record.
