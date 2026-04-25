@@ -25,6 +25,19 @@ allowed-tools: Read, Write, Bash
 Spawning the orchestrator from within an active orchestrator run causes recursive
 delegation and must never happen.
 
+## Pre-run Context
+
+Before executing or advising on **any** stage, read the following files if they exist:
+
+1. `memory/architecture/knowledge.md` — known failure patterns, successful tool flags, PDK/tool quirks.
+   Incorporate its guidance into every stage decision. If absent, proceed without it.
+2. `memory/architecture/run_state.md` — current run identity (`run_id`, `design_name`, `tool`,
+   `last_stage`). Use this to resume correctly after interruption. If absent, a new run
+   is starting; the orchestrator will create this file before the first stage.
+
+This pre-run read applies whether this skill is loaded by a user or called by the
+orchestrator mid-flow. It ensures the fix database is consulted before any diagnosis step.
+
 ## Purpose
 Guide the full microarchitecture evaluation process from product specification
 through to a signed-off microarchitecture document ready for RTL handoff. Covers
@@ -144,16 +157,52 @@ PPA modelling, risk assessment, and sign-off.
 6. Apply 15–20% margin — RTL is never minimal
 7. Flag immediately if any estimate exceeds 80% of budget
 
+### Clock Gating Opportunity Analysis
+Perform this analysis using the activity factors already collected for dynamic power:
+
+1. For each identified clock domain, record its activity factor α derived from the
+   use-case workload sweep (gem5 simulation or analytical model).
+2. Classify each domain:
+   - α < 0.15 — **high gating opportunity**: clock gating will save > 30% dynamic power
+     for that domain; flag as a must-have RTL requirement.
+   - 0.15 ≤ α < 0.40 — **moderate gating opportunity**: clock gating recommended;
+     flag as should-have RTL requirement.
+   - α ≥ 0.40 — **always-active**: no gating benefit; document as always-on.
+3. Produce a `clock_power_budget` table (one row per domain):
+
+   | Domain | Frequency | α (activity) | Est. Clock Power (mW) | Gating Class |
+   |--------|-----------|-------------|----------------------|--------------|
+   | core   | 1 GHz     | 0.08        | 45                   | high         |
+   | dsp    | 500 MHz   | 0.55        | 30                   | always-on    |
+
+4. McPAT `clocking` component already models clock network power — ensure the
+   frequency-sweep input reflects per-domain frequencies, not a single global clock.
+5. Include the `clock_power_budget` table in the hand-off package to RTL design.
+   The RTL agent will use it to target ICG (Integrated Clock Gate) insertion.
+
+### Supported Tools for Clock/Power Analysis
+| Tool | Type | Use |
+|------|------|-----|
+| McPAT | Open-source | Clock network + dynamic/leakage power (already in flow) |
+| gem5 | Open-source | Workload activity factor extraction (already in flow) |
+| CACTI | Open-source | Memory clock power estimate (already in flow) |
+| Yosys + ABC | Open-source | Post-synth switching activity cross-check (optional) |
+| Synopsys PrimePower | Proprietary | RTL-level power sign-off (optional) |
+| Cadence Joules RTL | Proprietary | RTL power analysis (optional) |
+
 ### QoR Metrics to Evaluate
 - Area estimate: < 80% of budget
 - Dynamic power: < 80% of budget
 - Leakage: < 15% of total estimated power
+- Clock gating coverage: ≥ 70% of register-bank bits must map to a domain classified
+  as high or moderate gating opportunity (i.e. not always-on)
 - Confidence: HIGH / MEDIUM / LOW
 
 ### Output Required
 - Area breakdown by block
 - Power breakdown: dynamic, leakage, per domain
 - Margin analysis vs targets
+- `clock_power_budget` table (domain → frequency, activity factor, estimated clock power mW, gating class)
 
 ---
 
@@ -194,7 +243,9 @@ PPA modelling, risk assessment, and sign-off.
 - [ ] DFT strategy agreed
 - [ ] Verification strategy agreed
 - [ ] RTL coding guidelines documented
-- [ ] Hand-off package complete for RTL team
+- [ ] `clock_power_budget` table produced; gating class assigned per domain
+- [ ] Clock gating coverage ≥ 70% of register bits (high + moderate gating domains)
+- [ ] Hand-off package complete for RTL team (includes `clock_power_budget` table)
 
 ### Output Required
 - Signed-off microarchitecture document
@@ -214,3 +265,20 @@ without full orchestrator context.
 
 Use `run_id` = `architecture_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
 stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
+### Run state (write before first stage, update after each stage)
+Write `memory/architecture/run_state.md` as the **first action** before launching any tool:
+```markdown
+run_id:      architecture_<YYYYMMDD>_<HHMMSS>
+design_name: <design>
+tool:        <primary tool>
+start_time:  <ISO-8601>
+last_stage:  <first stage name>
+```
+Update `last_stage` after each stage completes. This file lets wakeup-loop prompts
+and resumed sessions identify the correct run without relying on in-memory state.
+Create the file and parent directories if they do not exist.
+
+### Optional: claude-mem index
+If `mcp__plugin_ecc_memory__add_observations` is available in this session, emit each
+applied fix as an observation to entity `chip-design-architecture-fixes` after writing to
+`experiences.jsonl`. Skip silently if the tool is absent — JSONL is the canonical record.

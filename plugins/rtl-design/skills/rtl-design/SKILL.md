@@ -25,6 +25,19 @@ Use the domain rules in this file only when the orchestrator reads this skill
 mid-flow for stage-specific guidance, or when the user asks a targeted reference
 question rather than requesting a full flow execution.
 
+## Pre-run Context
+
+Before executing or advising on **any** stage, read the following files if they exist:
+
+1. `memory/rtl-design/knowledge.md` — known failure patterns, successful tool flags, PDK/tool quirks.
+   Incorporate its guidance into every stage decision. If absent, proceed without it.
+2. `memory/rtl-design/run_state.md` — current run identity (`run_id`, `design_name`, `tool`,
+   `last_stage`). Use this to resume correctly after interruption. If absent, a new run
+   is starting; the orchestrator will create this file before the first stage.
+
+This pre-run read applies whether this skill is loaded by a user or called by the
+orchestrator mid-flow. It ensures the fix database is consulted before any diagnosis step.
+
 ## Purpose
 Guide RTL development from module hierarchy planning through lint-clean,
 CDC-clean, synthesis-ready RTL. Enforces industry-standard SystemVerilog
@@ -103,10 +116,40 @@ and synthesis handoff.
 3. Gray-coded pointers for async FIFO crossing
 4. Never sample asynchronous data directly in synchronous logic
 
+### Domain Rules — Power Intent (Clock Gating)
+Apply these rules for every clock domain. Read `clock_power_budget` from the architecture
+hand-off package if it exists; otherwise classify domains using toggle-count estimates
+from Verilator simulation.
+
+1. **High gating opportunity domains** (α < 0.15 from architecture, or toggle rate < 15%
+   from Verilator): insert an ICG cell (`CLKGATETST_X*` or technology-equivalent) at the
+   outermost clock enable boundary. Do not rely on synthesis to infer clock gates — explicit
+   ICG insertion at RTL is required.
+2. **Moderate gating opportunity domains** (0.15 ≤ α < 0.40): insert ICG at the
+   sub-block level for any register file or datapath wider than 32 bits.
+3. **Always-on domains** (α ≥ 0.40, or documented as always-on in architecture hand-off):
+   no ICG required; add a `/* always-on: <reason> */` comment at the clock port declaration.
+4. ICG enable signal: must be registered (setup-timing safe); combinational enable
+   is a lint error.
+5. ICG cells: use only library-approved cells (`CLKGATETST_*` for testability with
+   scan-enable override); do not use behavioural `if (enable) clk_gated = clk` constructs.
+6. After inserting ICGs, measure `clock_gating_coverage`:
+   `coverage = (register bits behind an ICG) / (total register bits in domain) × 100%`
+   Report this metric in the `rtl_signoff` output.
+
+### Supported Tools for Power Intent
+| Tool | Type | Use |
+|------|------|-----|
+| Verilator | Open-source | Toggle coverage → activity factor for gating classification |
+| SpyGlass (Synopsys) | Proprietary | RTL power lint, missing ICG detection |
+| VC Static (Synopsys) | Proprietary | Power-intent rule checking |
+| Questa PowerPro (Siemens) | Proprietary | Formal power analysis |
+
 ### Output Required
 - RTL source files (.sv) per module
 - SVA assertion files per module
 - Inline comments on all non-obvious logic
+- `clock_gating_coverage` metric per domain (appended to sign-off record)
 
 ---
 
@@ -196,6 +239,9 @@ and synthesis handoff.
 - [ ] SVA assertions in place for key properties
 - [ ] Code review completed
 - [ ] File list and compile order documented
+- [ ] ICG cells inserted for all high/moderate gating opportunity domains
+- [ ] Always-on domains annotated with `/* always-on: <reason> */`
+- [ ] `clock_gating_coverage` ≥ 60% for high-opportunity domains; reported in sign-off record
 
 ### Output Required
 - RTL file package (all .sv files)
@@ -216,3 +262,20 @@ without full orchestrator context.
 
 Use `run_id` = `rtl-design_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
 stage update). Set `signoff_achieved: false` until the final sign-off stage completes.
+### Run state (write before first stage, update after each stage)
+Write `memory/rtl-design/run_state.md` as the **first action** before launching any tool:
+```markdown
+run_id:      rtl-design_<YYYYMMDD>_<HHMMSS>
+design_name: <design>
+tool:        <primary tool>
+start_time:  <ISO-8601>
+last_stage:  <first stage name>
+```
+Update `last_stage` after each stage completes. This file lets wakeup-loop prompts
+and resumed sessions identify the correct run without relying on in-memory state.
+Create the file and parent directories if they do not exist.
+
+### Optional: claude-mem index
+If `mcp__plugin_ecc_memory__add_observations` is available in this session, emit each
+applied fix as an observation to entity `chip-design-rtl-design-fixes` after writing to
+`experiences.jsonl`. Skip silently if the tool is absent — JSONL is the canonical record.
