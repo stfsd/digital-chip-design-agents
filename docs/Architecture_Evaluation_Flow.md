@@ -234,7 +234,7 @@ Using activity factors already collected for dynamic power:
 - Area estimate: < 80% of budget (to allow RTL overhead margin)
 - Dynamic power: < 80% of budget
 - Leakage power: < 15% of total estimated power
-- Clock gating coverage: ≥ 70% of register-bank bits in high/moderate gating domains
+- Clock-gating coverage: ≥ 60% of register-bank bits in high-opportunity domains
 - Confidence level: HIGH / MEDIUM / LOW (based on model fidelity)
 
 ## Output Required
@@ -297,7 +297,7 @@ requirements and is ready to proceed to RTL design.
 - [ ] DFT strategy agreed (scan, BIST, JTAG)
 - [ ] Verification strategy agreed (UVM, formal, emulation split)
 - [ ] `clock_power_budget` table produced; gating class assigned per domain
-- [ ] Clock gating coverage ≥ 70% of register bits (high + moderate gating domains)
+- [ ] Clock-gating coverage ≥ 60% of register bits in high-opportunity domains
 - [ ] Hand-off package includes `clock_power_budget` table for RTL team
 
 ## Output Required

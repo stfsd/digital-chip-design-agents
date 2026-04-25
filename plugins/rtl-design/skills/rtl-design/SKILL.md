@@ -118,8 +118,11 @@ and synthesis handoff.
 
 ### Domain Rules — Power Intent (Clock Gating)
 Apply these rules for every clock domain. Read `clock_power_budget` from the architecture
-hand-off package if it exists; otherwise classify domains using toggle-count estimates
-from Verilator simulation.
+hand-off package. **For orchestrated Architecture → RTL runs, the `clock_power_budget` table
+is a required handoff contract; if missing, treat as a handoff violation and abort with a
+clear error directing the user to notify upstream packaging.** For non-orchestrated or local
+RTL-only runs, classify domains using toggle-count estimates from Verilator simulation as
+a fallback.
 
 1. **High gating opportunity domains** (α < 0.15 from architecture, or toggle rate < 15%
    from Verilator): insert an ICG cell (`CLKGATETST_X*` or technology-equivalent) at the
@@ -138,6 +141,7 @@ from Verilator simulation.
    Report this metric in the `rtl_signoff` output.
 
 ### Supported Tools for Power Intent
+
 | Tool | Type | Use |
 |------|------|-----|
 | Verilator | Open-source | Toggle coverage → activity factor for gating classification |

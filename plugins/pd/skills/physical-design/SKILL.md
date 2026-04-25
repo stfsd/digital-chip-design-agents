@@ -321,7 +321,12 @@ append a second line for the same run. Write with the stages completed so far an
 `signoff_achieved: false`; overwrite to `true` only when signoff passes.
 
 Use `run_id` = `pd_<YYYYMMDD>_<HHMMSS>` (set once at flow start; reuse on each
-stage update). Create the file and parent directories if they do not exist.
+stage update). **Every JSON record written to experiences.jsonl must include a top-level
+"run_id" field** (string) inside the record itself — upsert behavior is keyed by this field.
+Do not rely on external metadata; the "run_id" property must be present in the JSON object.
+Records should be written with stages completed and `signoff_achieved: false`, and only
+overwritten to `true` when signoff passes. Create the file and parent directories if they
+do not exist.
 
 ### Optional: claude-mem index
 If `mcp__plugin_ecc_memory__add_observations` is available in this session, also emit

@@ -194,8 +194,10 @@ Perform this analysis using the activity factors already collected for dynamic p
 - Area estimate: < 80% of budget
 - Dynamic power: < 80% of budget
 - Leakage: < 15% of total estimated power
-- Clock gating coverage: ≥ 70% of register-bank bits must map to a domain classified
-  as high or moderate gating opportunity (i.e. not always-on)
+- Clock-gating coverage: ≥ 60% of register-bank bits in high-opportunity domains
+  (measured using planned register-map estimates from the microarchitecture specification;
+  mark estimate confidence as HIGH if register counts are frozen, MEDIUM if approximate,
+  LOW if based on scaling from similar designs)
 - Confidence: HIGH / MEDIUM / LOW
 
 ### Output Required
@@ -244,7 +246,7 @@ Perform this analysis using the activity factors already collected for dynamic p
 - [ ] Verification strategy agreed
 - [ ] RTL coding guidelines documented
 - [ ] `clock_power_budget` table produced; gating class assigned per domain
-- [ ] Clock gating coverage ≥ 70% of register bits (high + moderate gating domains)
+- [ ] Clock-gating coverage ≥ 60% of register bits in high-opportunity domains
 - [ ] Hand-off package complete for RTL team (includes `clock_power_budget` table)
 
 ### Output Required

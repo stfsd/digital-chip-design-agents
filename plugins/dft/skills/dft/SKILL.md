@@ -239,11 +239,11 @@ run_id:      dft_<YYYYMMDD>_<HHMMSS>
 design_name: <design>
 tool:        <primary tool>
 start_time:  <ISO-8601>
-last_stage:  <first stage name>
+last_stage:  null
 ```
-Update `last_stage` after each stage completes. This file lets wakeup-loop prompts
-and resumed sessions identify the correct run without relying on in-memory state.
-Create the file and parent directories if they do not exist.
+Update `last_stage` to the completed stage name only after each stage finishes successfully.
+This file lets wakeup-loop prompts and resumed sessions identify the correct run without
+relying on in-memory state. Create the file and parent directories if they do not exist.
 
 ### Optional: claude-mem index
 If `mcp__plugin_ecc_memory__add_observations` is available in this session, emit each

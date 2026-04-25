@@ -235,15 +235,17 @@ completes.
 ### Run state (write before first stage, update after each stage)
 Write `memory/formal/run_state.md` as the **first action** before launching any tool:
 ```markdown
-run_id:      formal_<YYYYMMDD>_<HHMMSS>
-design_name: <design>
-tool:        <primary tool>
-start_time:  <ISO-8601>
-last_stage:  <first stage name>
+run_id:       formal_<YYYYMMDD>_<HHMMSS>
+design_name:  <design>
+tool:         <primary tool>
+start_time:   <ISO-8601>
+last_stage:   null
+current_stage: <first stage name>
 ```
-Update `last_stage` after each stage completes. This file lets wakeup-loop prompts
-and resumed sessions identify the correct run without relying on in-memory state.
-Create the file and parent directories if they do not exist.
+Update `current_stage` when a stage starts, and set `last_stage` to the completed stage
+name only after successful completion (then clear `current_stage`). This file lets
+wakeup-loop prompts and resumed sessions identify the correct run and distinguish
+completed vs in-flight work. Create the file and parent directories if they do not exist.
 
 ### Optional: claude-mem index
 If `mcp__plugin_ecc_memory__add_observations` is available in this session, emit each

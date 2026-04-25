@@ -7,8 +7,8 @@ an experience record after each stage completes — no new infrastructure requir
 ## Two-Tier Design
 
 ### Tier 1 — `experiences.jsonl`
-Append-only JSONL file. One record per completed (or abandoned) orchestrator run.
-Machine-parseable; grows over time; never edited manually.
+JSONL file with per-stage upsert/overwrite by run_id. One record per orchestrator run,
+updated as stages complete. Machine-parseable; grows over time; never edited manually.
 
 ### Tier 2 — `knowledge.md`
 Human- and agent-readable distilled summary. Seeded with known failure patterns, successful
