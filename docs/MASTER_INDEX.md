@@ -101,13 +101,14 @@ Each orchestrator produces a standardized handoff package consumed by the next.
   "from": "Architecture Evaluation Orchestrator",
   "to":   "RTL Design Orchestrator",
   "package": {
-    "microarch_doc":    "path/to/microarch.md",
-    "module_hierarchy": "path/to/hierarchy.json",
-    "interface_specs":  "path/to/interfaces.md",
-    "memory_map":       "path/to/memory_map.md",
-    "clock_domains":    ["clk_core_1GHz", "clk_peri_200MHz"],
-    "coding_guidelines":"path/to/guidelines.md",
-    "verification_plan":"path/to/vplan.md"
+    "microarch_doc":       "path/to/microarch.md",
+    "module_hierarchy":    "path/to/hierarchy.json",
+    "interface_specs":     "path/to/interfaces.md",
+    "memory_map":          "path/to/memory_map.md",
+    "clock_domains":       ["clk_core_1GHz", "clk_peri_200MHz"],
+    "clock_power_budget":  "path/to/clock_power_budget.md",
+    "coding_guidelines":   "path/to/guidelines.md",
+    "verification_plan":   "path/to/vplan.md"
   }
 }
 ```

@@ -182,10 +182,28 @@ Enforce synthesizable, readable, and maintainable RTL coding practices.
 3. Use gray-coded counters for pointer crossings in async FIFOs
 4. Never sample asynchronous data directly in synchronous logic
 
+## Domain Rules — Power Intent (Clock Gating)
+Read `clock_power_budget` from architecture hand-off if it exists; else use
+Verilator toggle coverage to estimate activity factors.
+
+1. **High gating opportunity** (α < 0.15): insert ICG cell (`CLKGATETST_X*` or
+   technology equivalent) at the outermost clock enable boundary. Explicit ICG
+   insertion at RTL is required — do not rely on synthesis inference.
+2. **Moderate gating opportunity** (0.15 ≤ α < 0.40): insert ICG at sub-block
+   level for any register file or datapath wider than 32 bits.
+3. **Always-on** (α ≥ 0.40 or documented as always-on): no ICG required; add a
+   `/* always-on: <reason> */` comment at the clock port declaration.
+4. ICG enable signal must be registered (combinational enable is a lint error).
+5. Use only library-approved cells (`CLKGATETST_*`); no behavioral clock gating.
+6. Measure `clock_gating_coverage`:
+   `coverage = (register bits behind ICG / total register bits in domain) × 100%`
+   QoR gate: ≥ 60% for high-opportunity domains; report in sign-off record.
+
 ## Output Required
 - RTL source files (.sv) per module
 - Self-checking assertions (SVA) per module
 - Inline comments explaining non-obvious logic
+- `clock_gating_coverage` metric per domain (appended to sign-off record)
 ```
 
 ---
@@ -323,6 +341,9 @@ and synthesis handoff.
 - [ ] SVA assertions in place for key properties
 - [ ] Code review completed
 - [ ] File list and compile order documented
+- [ ] ICG cells inserted for all high/moderate gating opportunity domains
+- [ ] Always-on domains annotated with `/* always-on: <reason> */`
+- [ ] `clock_gating_coverage` ≥ 60% for high-opportunity domains; reported in sign-off record
 
 ## Output Required
 - RTL file package (all .sv files)
