@@ -25,6 +25,19 @@ allowed-tools: Read, Write, Bash
 Spawning the orchestrator from within an active orchestrator run causes recursive
 delegation and must never happen.
 
+## Pre-run Context
+
+Before executing or advising on **any** stage, read the following files if they exist:
+
+1. `memory/fpga/knowledge.md` — known failure patterns, successful tool flags, PDK/tool quirks.
+   Incorporate its guidance into every stage decision. If absent, proceed without it.
+2. `memory/fpga/run_state.md` — current run identity (`run_id`, `design_name`, `tool`,
+   `last_stage`). Use this to resume correctly after interruption. If absent, a new run
+   is starting; the orchestrator will create this file before the first stage.
+
+This pre-run read applies whether this skill is loaded by a user or called by the
+orchestrator mid-flow. It ensures the fix database is consulted before any diagnosis step.
+
 ## Purpose
 Port an ASIC design to an FPGA prototype platform for pre-silicon hardware/
 software co-development. The FPGA prototype is not cycle-accurate but
@@ -262,3 +275,20 @@ Field types: `run_id` and `stage` are non-empty strings; `timestamp` is ISO-8601
 `signoff_achieved` is a boolean (`false` for all stage appends; `true` only in the final
 sign-off append for the matching `run_id`); `outcomes` and `metrics` are objects; `tools`
 is an array of objects; `notes` is an optional string.
+### Run state (write before first stage, update after each stage)
+Write `memory/fpga/run_state.md` as the **first action** before launching any tool:
+```markdown
+run_id:      fpga_<YYYYMMDD>_<HHMMSS>
+design_name: <design>
+tool:        <primary tool>
+start_time:  <ISO-8601>
+last_stage:  <first stage name>
+```
+Update `last_stage` after each stage completes. This file lets wakeup-loop prompts
+and resumed sessions identify the correct run without relying on in-memory state.
+Create the file and parent directories if they do not exist.
+
+### Optional: claude-mem index
+If `mcp__plugin_ecc_memory__add_observations` is available in this session, emit each
+applied fix as an observation to entity `chip-design-fpga-fixes` after writing to
+`experiences.jsonl`. Skip silently if the tool is absent — JSONL is the canonical record.

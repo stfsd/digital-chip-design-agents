@@ -25,6 +25,19 @@ Use the domain rules in this file only when the orchestrator reads this skill
 mid-flow for stage-specific guidance, or when the user asks a targeted reference
 question rather than requesting a full flow execution.
 
+## Pre-run Context
+
+Before executing or advising on **any** stage, read the following files if they exist:
+
+1. `memory/formal/knowledge.md` — known failure patterns, successful tool flags, PDK/tool quirks.
+   Incorporate its guidance into every stage decision. If absent, proceed without it.
+2. `memory/formal/run_state.md` — current run identity (`run_id`, `design_name`, `tool`,
+   `last_stage`). Use this to resume correctly after interruption. If absent, a new run
+   is starting; the orchestrator will create this file before the first stage.
+
+This pre-run read applies whether this skill is loaded by a user or called by the
+orchestrator mid-flow. It ensures the fix database is consulted before any diagnosis step.
+
 ## Purpose
 Exhaustively prove design properties and equivalence using formal methods.
 Complements simulation-based verification for correctness proofs, protocol
@@ -219,3 +232,20 @@ stage update). Every JSON record written must include a top-level `"run_id"` fie
 whose value matches this key — stage writes must upsert/overwrite by matching this
 persisted `run_id`. Set `signoff_achieved: false` until the final sign-off stage
 completes.
+### Run state (write before first stage, update after each stage)
+Write `memory/formal/run_state.md` as the **first action** before launching any tool:
+```markdown
+run_id:      formal_<YYYYMMDD>_<HHMMSS>
+design_name: <design>
+tool:        <primary tool>
+start_time:  <ISO-8601>
+last_stage:  <first stage name>
+```
+Update `last_stage` after each stage completes. This file lets wakeup-loop prompts
+and resumed sessions identify the correct run without relying on in-memory state.
+Create the file and parent directories if they do not exist.
+
+### Optional: claude-mem index
+If `mcp__plugin_ecc_memory__add_observations` is available in this session, emit each
+applied fix as an observation to entity `chip-design-formal-fixes` after writing to
+`experiences.jsonl`. Skip silently if the tool is absent — JSONL is the canonical record.
