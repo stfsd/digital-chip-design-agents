@@ -70,14 +70,28 @@ placed/routed, prefer:
 ## Memory
 
 ### Read (session start)
-Before beginning `floorplan`, read `memory/pd/knowledge.md` if it exists.
-Incorporate its guidance into stage decisions — especially known failure patterns,
-successful tool flags, and PDK-specific notes. If the file does not exist, proceed
-without it.
+Before beginning `floorplan`, read the following if they exist:
+- `memory/pd/knowledge.md` — known failure patterns, tool flags, PDK quirks.
+  Incorporate into all stage decisions. If absent, proceed without it.
+- `memory/pd/run_state.md` — if present, a prior run was interrupted; use the
+  `run_id` and `last_stage` fields to resume correctly.
 
-### Write (session end)
-After signoff (or on escalation/abandon), upsert (create or replace by `run_id`) one JSON line in
-`memory/pd/experiences.jsonl`:
+### Write: run state (first action, before any tool invocation)
+Write `memory/pd/run_state.md`:
+```markdown
+run_id:      pd_<YYYYMMDD>_<HHMMSS>
+design_name: <design>
+pdk:         <pdk or unknown>
+tool:        <primary tool>
+start_time:  <ISO-8601>
+last_stage:  floorplan
+```
+Update `last_stage` after each stage completes. This file lets wakeup-loop prompts
+identify the correct run directory without depending on in-memory state.
+
+### Write: per-stage (after each stage)
+After every stage completes, upsert (create or replace by `run_id`) one JSON line in
+`memory/pd/experiences.jsonl` with the stages completed so far:
 ```json
 {
   "run_id": "<from state>",
@@ -96,9 +110,15 @@ After signoff (or on escalation/abandon), upsert (create or replace by `run_id`)
   },
   "issues_encountered": ["<description>", "..."],
   "fixes_applied": ["<description>", "..."],
-  "signoff_achieved": true,
+  "signoff_achieved": false,
   "notes": "<free-text observations>"
 }
 ```
-If the flow ends before signoff (interrupted, error, max turns exceeded), write the record immediately with the stages completed so far and `signoff_achieved: false`. Do not wait for a terminal signoff state.
+Set `signoff_achieved: true` only when the signoff stage passes all criteria.
+Do not append a second line for the same `run_id` — overwrite the existing line.
 Create the file and parent directories if they do not exist.
+
+### Optional: claude-mem index (per stage, if tool available)
+If `mcp__plugin_ecc_memory__add_observations` is available in this session, emit each
+applied fix as an observation to entity `chip-design-pd-fixes` immediately after writing
+to `experiences.jsonl`. Skip silently if the tool is absent — JSONL is the canonical record.

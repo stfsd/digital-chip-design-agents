@@ -213,16 +213,35 @@ microarchitecture before RTL is written.
 6. Apply 15–20% margin to all estimates (RTL is never minimal)
 7. Compare against budget; flag if estimate exceeds 80% of budget
 
+## Clock Gating Opportunity Analysis
+Using activity factors already collected for dynamic power:
+
+1. For each clock domain, record activity factor α from use-case workload sweep.
+2. Classify each domain:
+   - α < 0.15 — **high gating opportunity**: flag as must-have RTL requirement
+   - 0.15 ≤ α < 0.40 — **moderate gating opportunity**: flag as should-have RTL requirement
+   - α ≥ 0.40 — **always-active**: document as always-on; no ICG needed
+3. Produce a `clock_power_budget` table (one row per domain):
+
+   | Domain | Frequency | α (activity) | Est. Clock Power (mW) | Gating Class |
+   |--------|-----------|-------------|----------------------|--------------|
+   | core   | 1 GHz     | 0.08        | 45                   | high         |
+   | dsp    | 500 MHz   | 0.55        | 30                   | always-on    |
+
+4. Include `clock_power_budget` table in the RTL hand-off package.
+
 ## QoR Metrics
 - Area estimate: < 80% of budget (to allow RTL overhead margin)
 - Dynamic power: < 80% of budget
 - Leakage power: < 15% of total estimated power
+- Clock-gating coverage: ≥ 60% of register-bank bits in high-opportunity domains
 - Confidence level: HIGH / MEDIUM / LOW (based on model fidelity)
 
 ## Output Required
 - Area breakdown by block
 - Power breakdown: dynamic, leakage, per domain
 - Comparison against targets with margin analysis
+- `clock_power_budget` table (domain → frequency, activity factor, estimated clock power, gating class)
 ```
 
 ---
@@ -277,12 +296,15 @@ requirements and is ready to proceed to RTL design.
 - [ ] Reset strategy defined
 - [ ] DFT strategy agreed (scan, BIST, JTAG)
 - [ ] Verification strategy agreed (UVM, formal, emulation split)
+- [ ] `clock_power_budget` table produced; gating class assigned per domain
+- [ ] Clock-gating coverage ≥ 60% of register bits in high-opportunity domains
+- [ ] Hand-off package includes `clock_power_budget` table for RTL team
 
 ## Output Required
 - Signed-off microarchitecture document
 - Final trade-off decision record
 - RTL design guidelines derived from architecture
-- Hand-off package for RTL team
+- Hand-off package for RTL team (includes `clock_power_budget` table)
 ```
 
 ---

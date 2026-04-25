@@ -145,6 +145,13 @@ Structured summary object (in-memory) passed to `distil_knowledge`:
 - Console summary: how many new entries were added per section, and how many existing
   entries were annotated or corrected
 
+### Optional: claude-mem index
+After writing `knowledge.md`, if `mcp__plugin_ecc_memory__add_observations` is available
+in this session, emit each new issue/fix pair as an observation to entity
+`chip-design-<domain>-fixes`. Skip this step silently if the tool is absent — `knowledge.md`
+and `experiences.jsonl` are the canonical records. Do not hard-depend on claude-mem
+availability.
+
 ---
 
 ## Stage: report

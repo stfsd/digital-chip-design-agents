@@ -1,13 +1,14 @@
 # Agent Memory System
 
 This directory holds persistent, file-based memory for the digital chip design orchestrators.
-Agents read it at session start and write to it at session end — no new infrastructure required.
+Agents read it at session start, write a run-state file before the first stage, and upsert
+an experience record after each stage completes — no new infrastructure required.
 
 ## Two-Tier Design
 
 ### Tier 1 — `experiences.jsonl`
-Append-only JSONL file. One record per completed (or abandoned) orchestrator run.
-Machine-parseable; grows over time; never edited manually.
+JSONL file with per-stage upsert/overwrite by run_id. One record per orchestrator run,
+updated as stages complete. Machine-parseable; grows over time; never edited manually.
 
 ### Tier 2 — `knowledge.md`
 Human- and agent-readable distilled summary. Seeded with known failure patterns, successful
@@ -18,6 +19,7 @@ tool flags, and PDK/tool quirks. Intended to be periodically updated by a memory
 
 ```json
 {
+  "run_id": "<domain>_<YYYYMMDD>_<HHMMSS>",
   "timestamp": "<ISO-8601>",
   "domain": "<domain>",
   "design_name": "<from state>",
@@ -60,7 +62,8 @@ memory/
 │   └── .gitkeep
 ├── architecture/
 │   ├── knowledge.md             ← Tier 2: seeded domain knowledge
-│   └── experiences.jsonl        ← Tier 1: created on first run
+│   ├── experiences.jsonl        ← Tier 1: created on first run
+│   └── run_state.md             ← active run identity (created at session start)
 ├── compiler/
 ├── dft/
 ├── firmware/
@@ -77,10 +80,19 @@ memory/
 
 ## How Orchestrators Use This
 
-**Session start**: Read `memory/<domain>/knowledge.md` before the first stage.
-Incorporate guidance into stage decisions — especially known failure patterns,
-successful tool flags, and PDK-specific notes.
+**Session start**: Read `memory/<domain>/knowledge.md` and `memory/<domain>/run_state.md`
+before the first stage. `knowledge.md` provides known failure patterns and tool flags.
+`run_state.md` (if present) identifies an interrupted run to resume.
 
-**Session end**: After signoff (or on escalation/abandon), append one JSON line to
-`memory/<domain>/experiences.jsonl`. Create the file and parent directories if they
-do not exist.
+**Before first stage**: Write `memory/<domain>/run_state.md` with `run_id`, `design_name`,
+`tool`, `start_time`, and `last_stage`. Update `last_stage` after each stage completes.
+
+**Per stage**: Upsert (create-or-replace by `run_id`) one JSON line in
+`memory/<domain>/experiences.jsonl` with `signoff_achieved: false` and the metrics
+available so far. On final sign-off, set `signoff_achieved: true`. Do not append a second
+line for the same `run_id` — overwrite the existing line.
+
+**Optional — claude-mem index**: If `mcp__plugin_ecc_memory__add_observations` is available
+in the session, also emit each applied fix as an observation to entity
+`chip-design-<domain>-fixes`. Skip silently if the tool is absent — JSONL is the canonical
+record; claude-mem is a supplemental cross-session search index only.
